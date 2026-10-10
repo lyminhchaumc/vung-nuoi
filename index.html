@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Ao Thông Minh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: hai "chế độ xem" (Giá trị / Công nghệ) chung một thanh trên; mỗi phần = tiêu đề ngắn + một hình minh họa lớn, chữ tối thiểu. Màu lấy từ nước ao, bờ đất, đèn báo tủ điện. */
+:root {
+  --bg: #EEF3F1;
+  --surface: #FFFFFF;
+  --surface-2: #E2EBE8;
+  --ink: #0F2A2E;
+  --muted: #536A6D;
+  --line: #CCD9D5;
+  --accent: #0A7C76;
+  --accent-ink: #FFFFFF;
+  --accent-soft: rgba(10,124,118,.11);
+  --good: #2D8A4B; --good-soft: rgba(45,138,75,.13);
+  --warn: #B47706; --warn-soft: rgba(201,138,11,.15);
+  --crit: #C2362B; --crit-soft: rgba(194,54,43,.12);
+  --sky: #E4EFEC;
+  --soil: #D6CDB4;
+  --soil-2: #C4B998;
+  --water: #9DCBC5;
+  --water-deep: #78B3AC;
+  --metal: #8EA3A6;
+  --night: #0E2327; --night-ink: #DCEBE8; --night-muted: #8DA9A8; --night-line: #24403F;
+  --chat-bg: #DCE6E3; --bubble-me: #D3ECF9;
+  --font-display: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --font-data: "Roboto Mono", ui-monospace, Menlo, monospace;
+  --wide: 1120px;
+}
+
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55; padding-inline: 20px; padding-block: 0 64px; }
+.wrap { max-width: var(--wide); margin-inline: auto; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h2 { font-size: clamp(1.55rem, 3.1vw, 2.2rem); font-weight: 800; letter-spacing: -0.02em; }
+h3 { font-size: 1.05rem; font-weight: 700; }
+p { margin: 0; }
+.eyebrow { font-family: var(--font-data); font-size: .76rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.lead { font-size: 1.06rem; color: var(--muted); max-width: 62ch; }
+.mono { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+/* top bar */
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; margin-inline: -20px; padding: 10px 20px 0; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.bar1 { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.brand { font-weight: 800; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.switch { display: inline-flex; gap: 4px; padding: 4px; background: var(--surface-2); border-radius: 12px; }
+.switch button { font: inherit; font-size: .9rem; font-weight: 700; border: 0; background: transparent; color: var(--muted); padding: 8px 14px; border-radius: 9px; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.switch button svg { width: 18px; height: 18px; }
+.switch button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.subnav { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; padding-block: 8px; }
+.subnav::-webkit-scrollbar { display: none; }
+.subnav a { color: var(--muted); text-decoration: none; font-size: .84rem; padding: 5px 10px; border-radius: 6px; white-space: nowrap; }
+.subnav a:hover { color: var(--ink); background: var(--surface-2); }
+
+section { padding-block: 64px 8px; scroll-margin-top: 110px; }
+.sec-head { display: grid; gap: 10px; margin-bottom: 28px; max-width: 780px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.figure { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px; overflow-x: auto; }
+.figure svg { display: block; width: 100%; height: auto; min-width: 560px; }
+.cap { font-size: .84rem; color: var(--muted); margin-top: 10px; }
+
+/* svg illustration classes */
+.ill text { font-family: var(--font-body); }
+.ill .t { fill: var(--ink); font-size: 13px; font-weight: 700; }
+.ill .ts { fill: var(--muted); font-size: 11.5px; }
+.ill .ta { fill: var(--accent); font-size: 12px; font-weight: 700; }
+.ill .tc { fill: var(--crit); font-size: 11.5px; font-weight: 700; }
+.ill .tm { font-family: var(--font-data); fill: var(--accent); font-size: 10px; font-weight: 600; }
+.f-sky { fill: var(--sky); } .f-soil { fill: var(--soil); } .f-soil2 { fill: var(--soil-2); }
+.f-water { fill: var(--water); } .f-water2 { fill: var(--water-deep); }
+.f-metal { fill: var(--metal); } .f-surf { fill: var(--surface); } .f-surf2 { fill: var(--surface-2); }
+.f-acc { fill: var(--accent); } .f-accs { fill: var(--accent-soft); } .f-crits { fill: var(--crit-soft); } .f-crit { fill: var(--crit); } .f-good { fill: var(--good); } .f-warn { fill: var(--warn); }
+.s-line { stroke: var(--line); stroke-width: 1.5; } .s-ink { stroke: var(--ink); stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.s-mut { stroke: var(--muted); stroke-width: 1.4; fill: none; stroke-linecap: round; }
+.s-acc { stroke: var(--accent); stroke-width: 2; } .s-crit { stroke: var(--crit); stroke-width: 2; }
+.s-dash { stroke: var(--accent); stroke-width: 1.6; stroke-dasharray: 5 5; fill: none; }
+.s-wire { stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 3 3; fill: none; }
+.wave { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; animation: pulse 2.4s ease-in-out infinite; }
+.wave.d2 { animation-delay: .3s; } .wave.d3 { animation-delay: .6s; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+.spin { transform-box: fill-box; transform-origin: center; animation: spin 3s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* hero */
+.hero { padding-block: 40px 8px; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.25fr); gap: 36px; align-items: center; }
+.hero h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 800; letter-spacing: -0.035em; margin-block: 12px 16px; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.byline { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); display: grid; gap: 4px; font-size: .88rem; color: var(--muted); }
+.byline strong { color: var(--ink); }
+.tag { display: inline-flex; font-family: var(--font-data); font-size: .72rem; padding: 3px 8px; border-radius: 4px; width: fit-content; }
+.tag.warn { color: var(--warn); background: var(--warn-soft); }
+.hero-art { border-radius: 18px; overflow: hidden; border: 1px solid var(--line); background: var(--sky); }
+.hero-art svg { display: block; width: 100%; height: auto; }
+
+/* benefits */
+.benefits { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+.benefit { padding: 22px; display: grid; gap: 10px; align-content: start; }
+.benefit .ic { width: 48px; height: 48px; border-radius: 12px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; }
+.benefit .ic svg { width: 26px; height: 26px; }
+.benefit .big { font-family: var(--font-data); font-size: 1.6rem; font-weight: 600; color: var(--accent); }
+.benefit p { color: var(--muted); font-size: .93rem; }
+
+/* night chart */
+.night { background: var(--night); color: var(--night-ink); border-radius: 16px; padding: 20px; }
+.night-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+.night-head span { font-family: var(--font-data); font-size: .72rem; color: var(--night-muted); }
+.night svg { width: 100%; height: auto; display: block; margin-top: 6px; }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: .8rem; color: var(--night-muted); }
+.legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+
+/* dashboard + chat */
+.demo-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; min-width: 0; }
+.panel-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 11px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; background: var(--surface); }
+.panel-bar b { font-size: .9rem; }
+.sample { font-family: var(--font-data); font-size: .68rem; color: var(--muted); border: 1px dashed var(--line); padding: 2px 7px; border-radius: 4px; }
+.summary { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); border-bottom: 1px solid var(--line); }
+.summary div { padding: 10px 14px; border-right: 1px solid var(--line); display: grid; }
+.summary div:last-child { border-right: 0; }
+.summary small { color: var(--muted); font-size: .72rem; }
+.summary strong { font-family: var(--font-data); font-size: 1.2rem; }
+.zone { padding: 12px 14px 4px; }
+.zone h4 { margin: 0 0 8px; font-size: .74rem; font-family: var(--font-data); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.ponds { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; padding-bottom: 10px; }
+.pond { border: 1px solid var(--line); border-left: 4px solid var(--good); border-radius: 8px; padding: 8px 10px; display: grid; gap: 4px; }
+.pond.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+.pond.crit { border-left-color: var(--crit); background: var(--crit-soft); }
+.pond-top { display: flex; justify-content: space-between; align-items: center; }
+.pill { font-size: .64rem; font-weight: 700; padding: 1px 7px; border-radius: 99px; background: var(--good-soft); color: var(--good); }
+.pond.warn .pill { background: var(--warn-soft); color: var(--warn); }
+.pond.crit .pill { background: var(--crit-soft); color: var(--crit); }
+.reads { display: flex; justify-content: space-between; font-family: var(--font-data); font-size: .74rem; }
+.reads small { display: block; color: var(--muted); font-size: .6rem; }
+.pond .note { font-size: .7rem; color: var(--ink); line-height: 1.3; }
+.chat { background: var(--chat-bg); }
+.chat-body { padding: 12px; display: grid; gap: 9px; }
+.msg { max-width: 92%; padding: 8px 11px; border-radius: 10px; font-size: .84rem; line-height: 1.42; background: var(--surface); }
+.msg .who { display: block; font-size: .7rem; font-weight: 700; color: var(--accent); }
+.msg .t { display: block; text-align: right; font-size: .64rem; color: var(--muted); font-family: var(--font-data); }
+.msg.me { justify-self: end; background: var(--bubble-me); }
+.msg.me .who { color: var(--muted); }
+.msg .flag { color: var(--crit); font-weight: 700; }
+
+/* escalation ladder */
+.ladder { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
+.rung { padding: 18px; display: grid; gap: 10px; align-content: start; position: relative; }
+.rung .ic { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.rung.hot .ic { background: var(--crit-soft); color: var(--crit); }
+.rung .ic svg { width: 22px; height: 22px; }
+.rung .when { font-family: var(--font-data); font-weight: 600; font-size: 1.3rem; }
+.rung p { font-size: .9rem; color: var(--muted); }
+.rung:not(:last-child)::after { content: "→"; position: absolute; right: -13px; top: 30px; color: var(--muted); font-weight: 700; }
+.note-band { margin-top: 16px; padding: 12px 16px; border-radius: 10px; background: var(--warn-soft); font-size: .9rem; }
+.note-band b { color: var(--warn); }
+
+/* traceability */
+.trace { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 0; }
+.tstep { display: grid; justify-items: center; text-align: center; gap: 8px; padding: 6px 8px; position: relative; }
+.tstep .ic { width: 64px; height: 64px; border-radius: 18px; background: var(--surface); border: 1.5px solid var(--line); display: grid; place-items: center; color: var(--accent); }
+.tstep.key .ic { border: 2px solid var(--accent); background: var(--accent-soft); }
+.tstep .ic svg { width: 32px; height: 32px; }
+.tstep b { font-size: .92rem; }
+.tstep span { font-size: .8rem; color: var(--muted); }
+.tstep:not(:last-child)::after { content: ""; position: absolute; top: 38px; left: calc(50% + 40px); right: calc(-50% + 40px); border-top: 2px dashed var(--line); }
+.trace-grid { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,.85fr); gap: 20px; margin-top: 28px; align-items: start; }
+.lot-art svg { width: 100%; height: auto; display: block; }
+.scan { background: var(--surface); border: 1px solid var(--line); border-radius: 26px; padding: 14px; max-width: 340px; justify-self: center; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+.scan-head { display: flex; gap: 12px; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.scan-head svg { width: 64px; height: 64px; flex: none; }
+.scan-head b { display: block; font-size: .95rem; }
+.scan-head span { font-family: var(--font-data); font-size: .72rem; color: var(--muted); }
+.scan dl { margin: 0; display: grid; gap: 0; }
+.scan dl div { display: grid; grid-template-columns: 96px minmax(0,1fr); gap: 8px; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: .82rem; }
+.scan dt { color: var(--muted); }
+.scan dd { margin: 0; font-weight: 600; }
+.scan dd .ok { color: var(--good); }
+.spark { width: 100%; height: 34px; display: block; }
+.codes { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin-top: 20px; }
+.code { padding: 16px; display: grid; gap: 6px; align-content: start; }
+.code .k { font-family: var(--font-data); font-size: .72rem; color: var(--accent); font-weight: 600; }
+.code p { font-size: .88rem; color: var(--muted); }
+
+/* calculator */
+.calc { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); overflow: hidden; }
+.calc-in { padding: 22px; display: grid; gap: 12px; border-right: 1px solid var(--line); }
+.field { display: grid; grid-template-columns: minmax(0,1fr) 120px; gap: 10px; align-items: center; }
+.field label { font-size: .88rem; }
+.field label small { display: block; color: var(--muted); font-size: .72rem; }
+.field input { font-family: var(--font-data); font-size: .92rem; text-align: right; width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--ink); }
+.calc-out { padding: 22px; display: grid; gap: 16px; align-content: start; background: var(--night); color: var(--night-ink); }
+.calc-out .bigout small { color: var(--night-muted); font-size: .85rem; display: block; }
+.calc-out .bigout strong { font-family: var(--font-data); font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 600; color: #7FE0D6; }
+.line { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px dashed var(--night-line); font-size: .88rem; }
+.line span:first-child { color: var(--night-muted); }
+.line span:last-child { font-family: var(--font-data); white-space: nowrap; }
+.line.total span { color: var(--night-ink); font-weight: 700; }
+.bar-cmp { display: grid; gap: 8px; }
+.bar-cmp div { display: grid; grid-template-columns: 110px minmax(0,1fr); gap: 10px; align-items: center; font-size: .76rem; color: var(--night-muted); }
+.bar-cmp i { display: block; height: 12px; border-radius: 3px; background: #7FE0D6; min-width: 3px; transition: width .3s; }
+.bar-cmp i.cost { background: var(--night-muted); }
+.fine { font-size: .78rem; color: var(--night-muted); }
+
+/* roadmap */
+.road { display: grid; grid-template-columns: 1fr 28px 1fr 28px 1fr 28px 1fr; }
+.phase { padding: 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.phase.hot { border: 2px solid var(--accent); background: var(--accent-soft); }
+.phase .when { font-family: var(--font-data); font-size: .76rem; color: var(--muted); }
+.phase ul { margin: 0; padding-left: 16px; display: grid; gap: 4px; font-size: .86rem; }
+.gate { display: flex; align-items: center; justify-content: center; position: relative; }
+.gate::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1.5px dashed var(--line); }
+.gate i { width: 14px; height: 14px; transform: rotate(45deg); background: var(--surface-2); border: 1.5px solid var(--muted); position: relative; }
+.gate.hot i { background: var(--accent); border-color: var(--accent); }
+.gates-legend { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 14px; font-size: .88rem; }
+.gates-legend span { display: flex; align-items: center; gap: 8px; }
+.gates-legend i { width: 10px; height: 10px; transform: rotate(45deg); background: var(--surface-2); border: 1.5px solid var(--muted); }
+.gates-legend i.hot { background: var(--accent); border-color: var(--accent); }
+
+/* tech: compare */
+.vs { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin-top: 18px; }
+.vs .card { padding: 18px; display: grid; gap: 10px; align-content: start; }
+.vs .card.pick { border: 2px solid var(--accent); }
+.vs h3 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.badge { font-size: .68rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--accent); color: var(--accent-ink); white-space: nowrap; }
+.meter { display: grid; grid-template-columns: 92px minmax(0,1fr); gap: 8px; align-items: center; font-size: .8rem; color: var(--muted); }
+.dots { display: flex; gap: 4px; }
+.dots i { width: 14px; height: 8px; border-radius: 2px; background: var(--surface-2); }
+.dots i.on { background: var(--accent); }
+.vs ul { margin: 0; padding-left: 16px; font-size: .85rem; display: grid; gap: 4px; }
+
+/* tables */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-data); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--surface-2); }
+tr:last-child td { border-bottom: 0; }
+td.num { font-family: var(--font-data); white-space: nowrap; }
+td.g { color: var(--good); } td.w { color: var(--warn); } td.r { color: var(--crit); }
+.chip { display: inline-block; font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.chip.must { background: var(--accent-soft); color: var(--accent); }
+.chip.should { background: var(--surface-2); color: var(--ink); }
+.chip.later { color: var(--muted); border: 1px dashed var(--line); }
+.tabs { display: inline-flex; gap: 4px; padding: 4px; background: var(--surface-2); border-radius: 10px; margin-bottom: 14px; }
+.tabs button { font: inherit; font-size: .88rem; font-weight: 600; border: 0; background: transparent; color: var(--muted); padding: 7px 14px; border-radius: 7px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); }
+.rules { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-top: 18px; }
+.rule { padding: 14px 16px; display: grid; gap: 6px; font-size: .88rem; }
+.rule .if { font-family: var(--font-data); font-size: .8rem; color: var(--muted); }
+.rule .if b { color: var(--ink); }
+.rule .then { font-weight: 600; }
+.rule .then::before { content: "→ "; color: var(--accent); }
+.qs { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; counter-reset: q; }
+.q { padding: 14px 16px; display: grid; grid-template-columns: 30px minmax(0,1fr); gap: 8px; font-size: .9rem; counter-increment: q; }
+.q::before { content: counter(q, decimal-leading-zero); font-family: var(--font-data); color: var(--accent); font-weight: 600; }
+
+.cta { margin-top: 64px; padding: 28px; border-radius: 18px; background: var(--night); color: var(--night-ink); display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 20px; align-items: center; }
+.cta h2 { color: var(--night-ink); font-size: clamp(1.3rem, 2.6vw, 1.8rem); }
+.cta p { color: var(--night-muted); margin-top: 8px; }
+.cta button { font: inherit; font-weight: 700; border: 0; border-radius: 10px; padding: 12px 18px; background: #7FE0D6; color: #062224; cursor: pointer; white-space: nowrap; }
+
+footer { margin-top: 56px; padding-top: 22px; border-top: 1px solid var(--line); display: grid; grid-template-columns: minmax(0,1.3fr) minmax(0,1fr); gap: 28px; font-size: .84rem; color: var(--muted); }
+footer strong { color: var(--ink); font-size: 1rem; }
+footer .src a { display: block; margin-top: 4px; word-break: break-word; }
+
+@media (max-width: 900px) {
+  .hero, .demo-grid, .trace-grid, .calc { grid-template-columns: minmax(0,1fr); }
+  .calc-in { border-right: 0; border-bottom: 1px solid var(--line); }
+  .benefits, .vs, .codes { grid-template-columns: minmax(0,1fr); }
+  .ladder { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .rung:nth-child(2)::after { display: none; }
+  .road { grid-template-columns: minmax(0,1fr); }
+  .gate { height: 34px; }
+  .trace { grid-template-columns: repeat(5, minmax(120px,1fr)); overflow-x: auto; }
+}
+@media (max-width: 640px) {
+  body { padding-inline: 16px; }
+  .topbar { margin-inline: -16px; padding-inline: 16px; }
+  .switch button span.long { display: none; }
+  .ladder, .rules, .qs { grid-template-columns: minmax(0,1fr); }
+  .rung::after { display: none; }
+  .summary { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .summary div:nth-child(2) { border-right: 0; }
+  .summary div:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+  .trace { grid-template-columns: minmax(0,1fr); gap: 14px; overflow: visible; }
+  .tstep { grid-template-columns: 64px minmax(0,1fr); justify-items: start; text-align: left; column-gap: 14px; }
+  .tstep .ic { grid-row: span 2; }
+  .tstep::after { display: none; }
+  .field { grid-template-columns: minmax(0,1fr) 104px; }
+  .cta, footer { grid-template-columns: minmax(0,1fr); }
+}
+</style>
+<style>[hidden]{display:none!important} img{max-width:100%} :root{color-scheme:light}</style>
+<meta name="description" content="Đề xuất ứng dụng IoT và trợ lý AI cho vùng nuôi tôm, cá – Lý Minh Châu">
+</head>
+<body>
+
+
+<!-- icon sprites -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.5 7h5M9.5 10.5h5M9.5 14h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-coin" viewBox="0 0 24 24"><path d="M3 7l6 6 4-3 8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 18h6v-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-fan" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 10c0-4 1-7 3-7s2 3-1 6M14 12c4 0 7 1 7 3s-3 2-6-1M12 14c0 4-1 7-3 7s-2-3 1-6M10 12c-4 0-7-1-7-3s3-2 6 1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9.5h8M8 12.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-call" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-siren" viewBox="0 0 24 24"><path d="M6 18v-6a6 6 0 0112 0v6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 18h16v3H4zM12 2v2M4.5 5l1.5 1.5M19.5 5L18 6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-shrimp" viewBox="0 0 32 32"><path d="M8 20c-2-6 2-13 10-13 5 0 8 3 8 6 0 4-4 6-8 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 18c-3 1-6 3-6 6l-3 2M12 24l-4-1M11 11l-4-5M14 9l-2-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="21" cy="11" r="1.4" fill="currentColor"/></symbol>
+    <symbol id="i-pond" viewBox="0 0 32 32"><path d="M3 12h26l-3 13H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 17c3 2 6 2 9 0s6-2 9 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M24 12V5h3v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-log" viewBox="0 0 32 32"><rect x="7" y="4" width="18" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M11 11h10M11 16h10M11 21h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-box" viewBox="0 0 32 32"><path d="M4 10l12-5 12 5v12l-12 5-12-5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 10l12 5 12-5M16 15v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-qr" viewBox="0 0 32 32"><rect x="4" y="4" width="9" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><rect x="19" y="4" width="9" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="19" width="9" height="9" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19 19h3v3h-3zM25 25h3v3h-3zM25 19h3M19 25v3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-value" viewBox="0 0 24 24"><path d="M3 12l5 5L21 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chip" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="bar1">
+      <div class="brand"><span class="brand-dot"></span>Ao Thông Minh</div>
+      <div class="switch" role="group" aria-label="Chọn nội dung">
+        <button type="button" id="btn-value" aria-pressed="true"><svg><use href="#i-value"/></svg>Giá trị <span class="long">cho vùng nuôi</span></button>
+        <button type="button" id="btn-tech" aria-pressed="false"><svg><use href="#i-chip"/></svg>Công nghệ <span class="long">&amp; thiết bị</span></button>
+      </div>
+    </div>
+    <nav class="subnav" id="nav-value" aria-label="Mục lục phần Giá trị">
+      <a href="#loi-ich">Lợi ích</a><a href="#mot-dem">Một đêm sụt oxy</a><a href="#minh-hoa">Quản lý trên điện thoại</a><a href="#bao-dong">Báo động</a><a href="#truy-xuat">Truy xuất nguồn gốc</a><a href="#hieu-qua">Hiệu quả đầu tư</a><a href="#lo-trinh">Lộ trình</a>
+    </nav>
+    <nav class="subnav" id="nav-tech" aria-label="Mục lục phần Công nghệ" hidden>
+      <a href="#kien-truc">Kiến trúc</a><a href="#tram">Trạm tại ao</a><a href="#lora">LoRa hay 4G</a><a href="#cam-bien">Cảm biến</a><a href="#nguong">Ngưỡng và luật tự động</a><a href="#ben-bi">Độ bền</a><a href="#khao-sat">Khảo sát kỹ thuật</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- =================== VIEW 1: GIÁ TRỊ =================== -->
+<div id="view-value">
+
+  <div class="hero">
+    <div>
+      <span class="eyebrow">Đề xuất cho vùng nuôi tôm, cá</span>
+      <h1>Mỗi ao có một <em>kỹ sư trực đêm</em> không ngủ gật.</h1>
+      <p class="lead">Đo nước 24/7. Oxy tụt thì tự bật quạt, gọi điện người trực. Mọi vùng nuôi nằm gọn trong nhóm Zalo của ban điều hành.</p>
+      <div class="byline">
+        <span>Lập bởi <strong>Lý Minh Châu</strong>, xây dựng cùng trợ lý AI</span>
+        <span>Tháng 10/2026</span>
+        <span class="tag warn">Bản trước khảo sát · sẽ điều chỉnh theo thực tế</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <svg class="ill" viewBox="0 0 640 360" role="img" aria-label="Minh họa ao nuôi có đầu dò, trạm ESP32 trên bờ, sóng LoRa tới gateway và cảnh báo lên điện thoại">
+        <rect width="640" height="360" class="f-sky"/>
+        <path d="M598 66 C 500 -4, 250 -4, 152 62" class="s-dash"/>
+        <text x="375" y="26" text-anchor="middle" class="ta">4G → máy chủ → Zalo</text>
+        <path d="M0 212 H640 V360 H0 Z" class="f-soil"/>
+        <path d="M0 300 H640 V360 H0 Z" class="f-soil2"/>
+        <path d="M30 212 L430 212 L392 330 L70 330 Z" class="f-water"/>
+        <path d="M46 260 L414 260 L392 330 L70 330 Z" class="f-water2"/>
+        <g class="s-ink" opacity=".55">
+          <path d="M110 292 q10 -9 22 -2 q-5 6 -13 5"/><path d="M190 312 q10 -9 22 -2 q-5 6 -13 5"/><path d="M262 286 q10 -9 22 -2 q-5 6 -13 5"/><path d="M150 248 q8 -7 18 -2 q-4 5 -10 4"/>
+        </g>
+        <!-- aerator -->
+        <g>
+          <path d="M150 210 q-14 -14 -28 0" class="s-mut"/><path d="M262 210 q14 -14 28 0" class="s-mut"/>
+          <rect x="160" y="196" width="92" height="14" rx="4" class="f-metal"/>
+          <g class="spin"><circle cx="168" cy="212" r="13" class="s-ink"/><path d="M168 199v26M155 212h26M159 203l18 18M177 203l-18 18" class="s-ink"/></g>
+          <g class="spin"><circle cx="244" cy="212" r="13" class="s-ink"/><path d="M244 199v26M231 212h26M235 203l18 18M253 203l-18 18" class="s-ink"/></g>
+          <text x="206" y="186" text-anchor="middle" class="t">Quạt nước</text>
+        </g>
+        <!-- power wire -->
+        <path d="M440 176 C 380 186, 300 196, 252 204" class="s-wire"/>
+        <!-- probe cable -->
+        <path d="M444 166 C 410 166, 360 176, 336 212 L336 282" class="s-ink"/>
+        <rect x="330" y="282" width="12" height="28" rx="3" class="f-acc"/>
+        <text x="322" y="302" text-anchor="end" class="t">Đầu dò</text>
+        <text x="322" y="317" text-anchor="end" class="ts">DO · pH · nhiệt độ</text>
+        <!-- station -->
+        <rect x="466" y="182" width="8" height="40" class="f-metal"/>
+        <rect x="440" y="120" width="60" height="64" rx="7" class="f-surf s-acc"/>
+        <rect x="449" y="131" width="42" height="17" rx="3" class="f-accs"/>
+        <text x="470" y="143" text-anchor="middle" class="tm">DO 5,6</text>
+        <circle cx="454" cy="166" r="3.5" class="f-good"/><circle cx="466" cy="166" r="3.5" class="f-good"/><circle cx="478" cy="166" r="3.5" class="f-warn"/>
+        <path d="M492 120 V86" class="s-ink"/><circle cx="492" cy="84" r="3.5" class="f-acc"/>
+        <text x="432" y="112" text-anchor="end" class="t">Trạm tại ao</text>
+        <!-- lora waves -->
+        <path d="M504 78 a10 10 0 0 1 0 14" class="wave"/><path d="M512 72 a18 18 0 0 1 0 26" class="wave d2"/><path d="M520 66 a26 26 0 0 1 0 38" class="wave d3"/>
+        <text x="548" y="124" text-anchor="middle" class="ta">LoRa</text>
+        <!-- gateway tower -->
+        <path d="M588 212 L600 74 L612 212 M592 168 H608 M595 128 H605 M590 190 L606 150 M594 150 L610 190" class="s-ink"/>
+        <circle cx="600" cy="70" r="4" class="f-acc"/>
+        <path d="M588 62 a14 14 0 0 1 24 0" class="wave d2"/>
+        <text x="600" y="234" text-anchor="middle" class="t">Gateway khu</text>
+        <!-- phone -->
+        <rect x="70" y="40" width="76" height="132" rx="13" class="f-surf s-line"/>
+        <rect x="76" y="54" width="64" height="104" rx="5" class="f-surf2"/>
+        <rect x="80" y="66" width="56" height="40" rx="7" class="f-crits"/>
+        <text x="86" y="82" class="tc">B2: quạt 2</text>
+        <text x="86" y="97" class="tc">mất dòng</text>
+        <rect x="80" y="112" width="56" height="34" rx="7" class="f-accs"/>
+        <text x="86" y="127" class="ta" style="font-size:10px">06:00 báo</text>
+        <text x="86" y="140" class="ta" style="font-size:10px">cáo sáng</text>
+        <text x="108" y="196" text-anchor="middle" class="t">Điện thoại quản lý</text>
+      </svg>
+    </div>
+  </div>
+
+  <section id="loi-ich">
+    <div class="sec-head"><span class="eyebrow">Giá trị cốt lõi</span><h2>Ba điều hệ thống mang lại</h2></div>
+    <div class="benefits">
+      <div class="card benefit"><div class="ic"><svg><use href="#i-shield"/></svg></div><span class="big">&lt; 5 phút</span><h3>Phát hiện sự cố, kể cả lúc 3 giờ sáng</h3><p>Sụt oxy, cúp điện, quạt nhảy CB đều được phát hiện và xử lý bước đầu tự động.</p></div>
+      <div class="card benefit"><div class="ic"><svg><use href="#i-phone"/></svg></div><span class="big">1 màn hình</span><h3>Mọi vùng nuôi trên một điện thoại</h3><p>Báo cáo tự gửi vào Zalo. Hỏi trợ lý AI thay vì gọi từng người.</p></div>
+      <div class="card benefit"><div class="ic"><svg><use href="#i-coin"/></svg></div><span class="big">Điện · Thức ăn</span><h3>Chạy quạt và cho ăn theo số liệu</h3><p>Bớt giờ quạt khi không cần, giảm thức ăn thừa, chuẩn hóa kinh nghiệm cho mọi ao.</p></div>
+    </div>
+  </section>
+
+  <section id="mot-dem">
+    <div class="sec-head"><span class="eyebrow">Vì sao cần</span><h2>Một đêm trời âm u: hai ao, hai kết cục</h2></div>
+    <figure class="night" style="margin:0">
+      <div class="night-head"><b>Oxy hòa tan trong ao tôm, 18h đến 6h sáng</b><span>mg/L · mô phỏng minh họa</span></div>
+      <svg id="night-chart" viewBox="0 0 760 300" role="img" aria-label="Có trạm: oxy giữ trên 4 mg/L. Không có hệ thống: oxy rơi xuống khoảng 2 mg/L lúc 4 giờ 30."></svg>
+      <div class="legend"><span><i style="background:#7FE0D6"></i>Có trạm tự động</span><span><i style="background:#F07A6E"></i>Không có hệ thống</span><span><i style="background:#E6B23C"></i>Ngưỡng cảnh báo 4 mg/L</span></div>
+    </figure>
+  </section>
+
+  <section id="minh-hoa">
+    <div class="sec-head"><span class="eyebrow">Hình dung khi vận hành</span><h2>6 giờ sáng, mở điện thoại là biết đêm qua ra sao</h2><p class="lead">Dữ liệu mẫu. Tên khu, số ao, loài nuôi sẽ cài đúng theo vùng nuôi của Quý công ty.</p></div>
+    <div class="demo-grid">
+      <div class="panel">
+        <div class="panel-bar"><b>Bảng điều khiển · 06:05</b><span class="sample">Dữ liệu mẫu</span></div>
+        <div class="summary">
+          <div><small>Đang theo dõi</small><strong>12</strong></div>
+          <div><small>Ổn định</small><strong style="color:var(--good)">10</strong></div>
+          <div><small>Chú ý</small><strong style="color:var(--warn)">1</strong></div>
+          <div><small>Khẩn cấp</small><strong style="color:var(--crit)">1</strong></div>
+        </div>
+        <div class="zone"><h4>Khu A · Tôm thẻ</h4><div class="ponds">
+          <div class="pond"><div class="pond-top"><b>A1</b><span class="pill">Ổn</span></div><div class="reads"><span><small>DO</small>5,8</span><span><small>°C</small>29,4</span><span><small>pH</small>7,9</span></div></div>
+          <div class="pond"><div class="pond-top"><b>A2</b><span class="pill">Ổn</span></div><div class="reads"><span><small>DO</small>5,5</span><span><small>°C</small>29,6</span><span><small>pH</small>8,0</span></div></div>
+          <div class="pond warn"><div class="pond-top"><b>A3</b><span class="pill">Chú ý</span></div><div class="reads"><span><small>DO</small>4,4</span><span><small>°C</small>29,1</span><span><small>pH</small>7,7</span></div><div class="note">Đã tự bật thêm 2 quạt lúc 03:20</div></div>
+          <div class="pond"><div class="pond-top"><b>A4</b><span class="pill">Ổn</span></div><div class="reads"><span><small>DO</small>6,1</span><span><small>°C</small>29,3</span><span><small>pH</small>8,1</span></div></div>
+          <div class="pond"><div class="pond-top"><b>A5</b><span class="pill">Ổn</span></div><div class="reads"><span><small>DO</small>5,9</span><span><small>°C</small>29,5</span><span><small>pH</small>8,0</span></div></div>
+        </div></div>
+        <div class="zone"><h4>Khu B · Tôm thẻ</h4><div class="ponds">
+          <div class="pond"><div class="pond-top"><b>B1</b><span class="pill">Ổn</span></div><div class="reads"><span><small>DO</small>5,6</span><span><small>°C</small>29,8</span><span><small>pH</small>7,9</span></div></div>
+          <div class="pond crit"><div class="pond-top"><b>B2</b><span class="pill">Khẩn</span></div><div class="reads"><span><small>DO</small>4,8</span><span><small>°C</small>29,7</span><span><small>pH</small>7,8</span></div><div class="note">Quạt 2 mất dòng điện từ 04:12</div></div>
+          <div class="pond"><div class="pond-top"><b>B3</b><span class="pill">Ổn</span></div><div class="reads"><span><small>DO</small>5,7</span><span><small>°C</small>29,9</span><span><small>pH</small>8,0</span></div></div>
+          <div class="pond"><div class="pond-top"><b>B4</b><span class="pill">Ổn</span></div><div class="reads"><span><small>DO</small>6,0</span><span><small>°C</small>29,6</span><span><small>pH</small>8,2</span></div></div>
+        </div></div>
+        <div class="zone"><h4>Khu C · Cá</h4><div class="ponds">
+          <div class="pond"><div class="pond-top"><b>C1</b><span class="pill">Ổn</span></div><div class="reads"><span><small>DO</small>4,6</span><span><small>°C</small>28,9</span><span><small>pH</small>7,4</span></div></div>
+          <div class="pond"><div class="pond-top"><b>C2</b><span class="pill">Ổn</span></div><div class="reads"><span><small>DO</small>4,9</span><span><small>°C</small>29,0</span><span><small>pH</small>7,3</span></div></div>
+          <div class="pond"><div class="pond-top"><b>C3</b><span class="pill">Ổn</span></div><div class="reads"><span><small>DO</small>5,2</span><span><small>°C</small>28,8</span><span><small>pH</small>7,5</span></div></div>
+        </div></div>
+      </div>
+      <div class="panel chat">
+        <div class="panel-bar"><b>Nhóm Zalo · Điều hành</b><span class="sample">Minh họa</span></div>
+        <div class="chat-body">
+          <div class="msg"><span class="who">Trợ lý vùng nuôi</span><b>Báo cáo sáng 10/10</b><br>10/12 ao ổn định. DO thấp nhất: A3 4,1 lúc 03:20, đã tự bật thêm quạt.<br><span class="flag">B2: quạt 2 mất dòng điện từ 04:12.</span><span class="t">06:00</span></div>
+          <div class="msg me"><span class="who">Quản lý</span>A3 đêm qua chạy quạt bao lâu?<span class="t">06:21</span></div>
+          <div class="msg"><span class="who">Trợ lý vùng nuôi</span>9,5 giờ, nhiều hơn đêm trước 1,2 giờ do trời âm u. Gợi ý kiểm tra nhá trước cữ sáng.<span class="t">06:21</span></div>
+          <div class="msg me"><span class="who">Kỹ thuật khu A</span>A5 cho ăn 12 kg, rải vôi 20 kg<span class="t">06:40</span></div>
+          <div class="msg"><span class="who">Trợ lý vùng nuôi</span>Đã ghi nhật ký A5 lúc 06:40.<span class="t">06:40</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="bao-dong">
+    <div class="sec-head"><span class="eyebrow">Báo động nhiều lớp</span><h2>Leo thang đến khi có người xác nhận</h2></div>
+    <div class="ladder">
+      <div class="card rung"><div class="ic"><svg><use href="#i-fan"/></svg></div><span class="when">0 phút</span><b>Trạm tự bật quạt</b><p>Không chờ ai, xử lý ngay tại ao.</p></div>
+      <div class="card rung"><div class="ic"><svg><use href="#i-chat"/></svg></div><span class="when">0 phút</span><b>Báo kỹ thuật</b><p>App và tin nhắn: tên ao, chỉ số, việc đã làm.</p></div>
+      <div class="card rung hot"><div class="ic"><svg><use href="#i-call"/></svg></div><span class="when">5 phút</span><b>Tự động gọi điện</b><p>Chưa ai xác nhận: gọi kỹ thuật, rồi người thứ hai.</p></div>
+      <div class="card rung hot"><div class="ic"><svg><use href="#i-siren"/></svg></div><span class="when">10 phút</span><b>Gọi quản lý, bật còi</b><p>Còi và đèn tại khu nuôi.</p></div>
+    </div>
+    <p class="note-band"><b>Vì sao cần gọi điện:</b> tin nhắn mẫu Zalo chỉ gửi được từ 6h đến 22h, nên báo động đêm luôn đi bằng cuộc gọi tự động và còi tại chỗ.</p>
+  </section>
+
+  <section id="truy-xuat">
+    <div class="sec-head">
+      <span class="eyebrow">Truy xuất nguồn gốc</span>
+      <h2>Nhật ký tự động hôm nay, mã QR cho lô hàng ngày thu hoạch</h2>
+      <p class="lead">Truy xuất theo <b>lô</b>, không gắn mã từng con tôm. Cùng ao, cùng vụ, cùng ngày thu hoạch là một lô, dùng chung một mã.</p>
+      <a id="demo-trace" href="truy-xuat.html" style="display:inline-flex;width:fit-content;align-items:center;gap:8px;margin-top:6px;padding:10px 16px;border-radius:10px;background:var(--accent);color:var(--accent-ink);font-weight:700;text-decoration:none">Xem trang truy xuất mẫu của một lô tôm →</a>
+    </div>
+    <div class="trace">
+      <div class="tstep"><div class="ic"><svg><use href="#i-shrimp"/></svg></div><b>Con giống</b><span>Trại giống, giấy kiểm dịch</span></div>
+      <div class="tstep key"><div class="ic"><svg><use href="#i-pond"/></svg></div><b>Ao nuôi</b><span>Mã cơ sở nuôi, mã ao</span></div>
+      <div class="tstep key"><div class="ic"><svg><use href="#i-log"/></svg></div><b>Nhật ký vụ nuôi</b><span>Nước, thức ăn, thuốc: ghi tự động</span></div>
+      <div class="tstep"><div class="ic"><svg><use href="#i-box"/></svg></div><b>Thu hoạch thành lô</b><span>Mã lô, sản lượng, ngày</span></div>
+      <div class="tstep"><div class="ic"><svg><use href="#i-qr"/></svg></div><b>QR trên thùng hàng</b><span>Người mua quét là thấy</span></div>
+    </div>
+    <div class="trace-grid">
+      <div class="card lot-art" style="padding:12px">
+        <svg class="ill" viewBox="0 0 560 300" role="img" aria-label="Hàng nghìn con tôm từ một ao trong một ngày thu hoạch gom thành một lô, dán một mã QR">
+          <rect x="0" y="0" width="560" height="300" rx="12" class="f-surf"/>
+          <path d="M20 90 L200 90 L180 200 L40 200 Z" class="f-water"/>
+          <text x="110" y="76" text-anchor="middle" class="t">Ao A3 · vụ 2/2026</text>
+          <g class="s-ink" opacity=".7">
+            <path d="M60 130 q8 -7 18 -2 q-4 5 -10 4"/><path d="M95 115 q8 -7 18 -2 q-4 5 -10 4"/><path d="M130 140 q8 -7 18 -2 q-4 5 -10 4"/><path d="M70 165 q8 -7 18 -2 q-4 5 -10 4"/><path d="M110 175 q8 -7 18 -2 q-4 5 -10 4"/><path d="M145 110 q8 -7 18 -2 q-4 5 -10 4"/><path d="M155 165 q8 -7 18 -2 q-4 5 -10 4"/>
+          </g>
+          <text x="110" y="226" text-anchor="middle" class="ts">hàng chục nghìn con</text>
+          <path d="M214 145 H286" class="s-dash"/><path d="M280 139 L290 145 L280 151" class="s-acc" fill="none"/>
+          <text x="250" y="132" text-anchor="middle" class="ta">thu hoạch</text>
+          <text x="250" y="166" text-anchor="middle" class="ts">10/10/2026</text>
+          <path d="M310 110 L390 80 L470 110 L470 210 L390 240 L310 210 Z" class="f-soil"/>
+          <path d="M310 110 L390 140 L470 110 M390 140 V240" class="s-ink" opacity=".5"/>
+          <rect x="400" y="150" width="56" height="56" rx="4" class="f-surf s-line"/>
+          <g id="mini-qr" transform="translate(405 155)"></g>
+          <text x="390" y="270" text-anchor="middle" class="t">1 lô = 1 mã</text>
+          <text x="390" y="288" text-anchor="middle" class="tm">LÔ A3-2602-1010</text>
+        </svg>
+      </div>
+      <div class="scan" aria-label="Màn hình minh họa khi quét QR">
+        <div class="scan-head"><svg id="big-qr" viewBox="0 0 25 25" role="img" aria-label="Mã QR minh họa"></svg><div><b>Tôm thẻ chân trắng</b><span>LÔ A3-2602-1010 · minh họa</span></div></div>
+        <dl>
+          <div><dt>Vùng nuôi</dt><dd>Khu A, ao A3 · mã cơ sở nuôi</dd></div>
+          <div><dt>Con giống</dt><dd>Thả 12/06/2026 · có kiểm dịch <span class="ok">✓</span></dd></div>
+          <div><dt>Nước ao</dt><dd><svg class="spark" viewBox="0 0 200 34" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22 L20 18 L40 20 L60 14 L80 16 L100 12 L120 17 L140 13 L160 15 L180 11 L200 14" fill="none" stroke="var(--accent)" stroke-width="2"/></svg>DO trung bình cả vụ đạt chuẩn <span class="ok">✓</span></dd></div>
+          <div><dt>Thức ăn</dt><dd>3 lô, 2 nhà cung cấp</dd></div>
+          <div><dt>Thuốc, hóa chất</dt><dd>Đủ thời gian ngưng trước thu hoạch <span class="ok">✓</span></dd></div>
+          <div><dt>Thu hoạch</dt><dd>10/10/2026 · 4,8 tấn</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="codes">
+      <div class="card code"><span class="k">MÃ CƠ SỞ NUÔI</span><h3>"Căn cước" của trại</h3><p>Cơ quan thủy sản địa phương cấp khi đăng ký nuôi. Thị trường Mỹ, EU, Nhật đều đòi hỏi.</p></div>
+      <div class="card code"><span class="k">MÃ LÔ</span><h3>Gắn ao, vụ, ngày thu hoạch</h3><p>Hệ thống tự tạo khi kỹ thuật báo thu hoạch qua Zalo.</p></div>
+      <div class="card code"><span class="k">QR / MÃ VẠCH</span><h3>In trên thùng, phiếu giao hàng</h3><p>Dẫn tới trang hồ sơ lô. Có thể dùng thêm mã vạch GS1 cho bán lẻ.</p></div>
+    </div>
+  </section>
+
+  <section id="hieu-qua">
+    <div class="sec-head"><span class="eyebrow">Hiệu quả đầu tư</span><h2>Cứu được một ao là đủ trả tiền cho nhiều ao</h2><p class="lead">Số mặc định là giả định. Nhập số liệu của trại để tính ngay.</p></div>
+    <div class="card calc">
+      <form class="calc-in" id="calc" novalidate>
+        <div class="field"><label for="ponds">Số ao lắp hệ thống</label><input id="ponds" type="number" min="1" step="1" value="20" inputmode="numeric"></div>
+        <div class="field"><label for="yield">Sản lượng mỗi ao mỗi vụ<small>kg</small></label><input id="yield" type="number" min="0" step="100" value="5000" inputmode="numeric"></div>
+        <div class="field"><label for="price">Giá bán<small>đồng/kg</small></label><input id="price" type="number" min="0" step="1000" value="120000" inputmode="numeric"></div>
+        <div class="field"><label for="incidents">Ao gặp sự cố nặng mỗi năm</label><input id="incidents" type="number" min="0" step="1" value="2" inputmode="numeric"></div>
+        <div class="field"><label for="loss">Thiệt hại mỗi sự cố<small>% giá trị ao</small></label><input id="loss" type="number" min="0" max="100" step="5" value="50" inputmode="numeric"></div>
+        <div class="field"><label for="saved">Sự cố hệ thống giúp tránh<small>%</small></label><input id="saved" type="number" min="0" max="100" step="5" value="60" inputmode="numeric"></div>
+        <div class="field"><label for="elec">Tiền điện quạt mỗi ao<small>triệu đồng/tháng</small></label><input id="elec" type="number" min="0" step="0.5" value="6" inputmode="decimal"></div>
+        <div class="field"><label for="months">Tháng vận hành mỗi năm</label><input id="months" type="number" min="1" max="12" step="1" value="9" inputmode="numeric"></div>
+        <div class="field"><label for="esave">Điện tiết kiệm<small>%</small></label><input id="esave" type="number" min="0" max="100" step="1" value="15" inputmode="numeric"></div>
+        <div class="field"><label for="capex">Chi phí lắp mỗi ao<small>triệu đồng</small></label><input id="capex" type="number" min="0" step="1" value="30" inputmode="decimal"></div>
+        <div class="field"><label for="opex">Phí dịch vụ mỗi ao<small>triệu đồng/tháng</small></label><input id="opex" type="number" min="0" step="0.1" value="0.6" inputmode="decimal"></div>
+      </form>
+      <div class="calc-out" aria-live="polite">
+        <div class="bigout"><small>Thời gian hoàn vốn ước tính</small><strong id="o-payback">–</strong></div>
+        <div>
+          <div class="line"><span>Giá trị một ao mỗi vụ</span><span id="o-pond">–</span></div>
+          <div class="line"><span>Thiệt hại tránh được / năm</span><span id="o-avoid">–</span></div>
+          <div class="line"><span>Tiền điện tiết kiệm / năm</span><span id="o-elec">–</span></div>
+          <div class="line total"><span>Tổng lợi ích / năm</span><span id="o-benefit">–</span></div>
+          <div class="line"><span>Đầu tư thiết bị ban đầu</span><span id="o-capex">–</span></div>
+          <div class="line"><span>Phí dịch vụ / năm</span><span id="o-opex">–</span></div>
+        </div>
+        <div class="bar-cmp"><div><span>Lợi ích / năm</span><i id="b-benefit"></i></div><div><span>Đầu tư ban đầu</span><i id="b-capex" class="cost"></i></div></div>
+        <p class="fine" id="o-equiv"></p>
+        <p class="fine">Chưa tính tiết kiệm thức ăn và công quản lý. Kết quả thật sẽ đo trong vụ thí điểm so với ao đối chứng.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="lo-trinh">
+    <div class="sec-head"><span class="eyebrow">Lộ trình</span><h2>Bắt đầu nhỏ, đo bằng số liệu, rồi nhân rộng</h2></div>
+    <div class="road">
+      <div class="card phase"><span class="when">Tuần 1–2</span><h3>1. Khảo sát, demo</h3><ul><li>Khảo sát hiện trường</li><li>Demo trạm + Zalo</li><li>Chọn ao thí điểm</li></ul></div>
+      <div class="gate" aria-hidden="true"><i></i></div>
+      <div class="card phase"><span class="when">Tháng 1</span><h3>2. Lắp thí điểm</h3><ul><li>2–4 trạm tại ao</li><li>Gateway, còi, gọi điện</li><li>Đào tạo kỹ thuật</li></ul></div>
+      <div class="gate" aria-hidden="true"></div>
+      <div class="card phase hot"><span class="when">Tháng 1–4</span><h3>3. Chạy trọn 1 vụ</h3><ul><li>So với ao đối chứng</li><li>Chỉnh ngưỡng theo trại</li><li>Nhật ký, truy xuất</li></ul></div>
+      <div class="gate hot" aria-hidden="true"><i></i></div>
+      <div class="card phase"><span class="when">Từ tháng 5</span><h3>4. Nhân rộng</h3><ul><li>Các khu còn lại</li><li>Dự báo sụt oxy</li><li>Tối ưu quạt, thức ăn</li></ul></div>
+    </div>
+    <div class="gates-legend"><span><i></i><b>Cổng 1:</b>&nbsp;đồng ý thí điểm</span><span><i class="hot"></i><b>Cổng 2:</b>&nbsp;đạt chỉ số thành công đã thống nhất</span></div>
+  </section>
+
+  <div class="cta">
+    <div><h2>Muốn biết bên trong trạm và đường truyền?</h2><p>Phần Công nghệ dành cho kỹ sư: kiến trúc, thiết bị, LoRa hay 4G, ngưỡng cảnh báo.</p></div>
+    <button type="button" id="go-tech">Xem phần Công nghệ →</button>
+  </div>
+</div>
+
+<!-- =================== VIEW 2: CÔNG NGHỆ =================== -->
+<div id="view-tech" hidden>
+
+  <section id="kien-truc" style="padding-top:40px">
+    <div class="sec-head"><span class="eyebrow">Kiến trúc</span><h2>Trạm tại ao tự cứu ao. Máy chủ lo giám sát, AI, báo cáo.</h2><p class="lead">Mất internet, trạm vẫn tự bật quạt và còi vẫn kêu.</p></div>
+    <div class="figure">
+      <svg class="ill" viewBox="0 0 1000 420" role="img" aria-label="Sơ đồ: cảm biến và quạt nối trạm ESP32, trạm gửi LoRa về gateway khu, gateway gửi 4G lên máy chủ và trợ lý AI, rồi tới Zalo, app, hồ sơ vụ nuôi">
+        <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="f-acc"/></marker></defs>
+        <rect x="16" y="20" width="300" height="380" rx="14" class="f-surf2"/>
+        <text x="36" y="48" class="ts" style="font-weight:700;letter-spacing:.06em">TẠI MỖI AO</text>
+        <rect x="36" y="70" width="120" height="70" rx="10" class="f-surf s-line"/><text x="96" y="100" text-anchor="middle" class="t">Cảm biến</text><text x="96" y="120" text-anchor="middle" class="ts">DO · pH · °C · EC</text>
+        <rect x="36" y="300" width="120" height="70" rx="10" class="f-surf s-line"/><text x="96" y="330" text-anchor="middle" class="t">Quạt, bơm</text><text x="96" y="350" text-anchor="middle" class="ts">contactor + đo dòng</text>
+        <rect x="186" y="170" width="114" height="100" rx="12" class="f-accs s-acc"/><text x="243" y="208" text-anchor="middle" class="t">Trạm ESP32</text><text x="243" y="228" text-anchor="middle" class="ts">luật tự động</text><text x="243" y="246" text-anchor="middle" class="ts">pin · thẻ nhớ</text>
+        <path d="M156 105 C 200 105, 220 130, 228 168" class="s-acc" fill="none" marker-end="url(#ar)"/>
+        <path d="M228 272 C 220 310, 200 335, 158 335" class="s-acc" fill="none" marker-end="url(#ar)"/>
+        <text x="200" y="300" class="ts">bật / tắt</text>
+        <path d="M302 220 H 398" class="s-dash" marker-end="url(#ar)"/>
+        <text x="350" y="208" text-anchor="middle" class="ta">LoRa</text>
+        <rect x="400" y="170" width="150" height="100" rx="12" class="f-surf s-line"/><text x="475" y="208" text-anchor="middle" class="t">Gateway khu</text><text x="475" y="228" text-anchor="middle" class="ts">gom dữ liệu các ao</text><text x="475" y="246" text-anchor="middle" class="ts">ắc quy dự phòng</text>
+        <rect x="400" y="310" width="150" height="70" rx="12" class="f-crits s-crit"/><text x="475" y="340" text-anchor="middle" class="t">Còi + gọi điện SIM</text><text x="475" y="360" text-anchor="middle" class="ts">chạy cả khi mất mạng</text>
+        <path d="M475 272 V 306" class="s-acc" fill="none" marker-end="url(#ar)"/>
+        <path d="M552 220 H 638" class="s-dash" marker-end="url(#ar)"/>
+        <text x="595" y="208" text-anchor="middle" class="ta">4G</text>
+        <rect x="640" y="150" width="150" height="70" rx="12" class="f-surf s-line"/><text x="715" y="180" text-anchor="middle" class="t">Máy chủ</text><text x="715" y="200" text-anchor="middle" class="ts">dữ liệu · luật · API</text>
+        <rect x="640" y="250" width="150" height="70" rx="12" class="f-surf s-line"/><text x="715" y="280" text-anchor="middle" class="t">Trợ lý AI</text><text x="715" y="300" text-anchor="middle" class="ts">hỏi đáp · dự báo</text>
+        <path d="M715 222 V 248" class="s-acc" fill="none" marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <rect x="830" y="60" width="150" height="62" rx="12" class="f-surf s-line"/><text x="905" y="88" text-anchor="middle" class="t">Nhóm Zalo</text><text x="905" y="106" text-anchor="middle" class="ts">báo cáo · hỏi đáp</text>
+        <rect x="830" y="180" width="150" height="62" rx="12" class="f-surf s-line"/><text x="905" y="208" text-anchor="middle" class="t">App và web</text><text x="905" y="226" text-anchor="middle" class="ts">giám sát · điều khiển</text>
+        <rect x="830" y="300" width="150" height="62" rx="12" class="f-surf s-line"/><text x="905" y="328" text-anchor="middle" class="t">Hồ sơ vụ nuôi</text><text x="905" y="346" text-anchor="middle" class="ts">truy xuất · PDF</text>
+        <path d="M792 175 C 810 175, 810 91, 828 91" class="s-acc" fill="none" marker-end="url(#ar)"/>
+        <path d="M792 200 C 810 200, 810 211, 828 211" class="s-acc" fill="none" marker-end="url(#ar)"/>
+        <path d="M792 290 C 810 290, 810 331, 828 331" class="s-acc" fill="none" marker-end="url(#ar)"/>
+      </svg>
+    </div>
+    <p class="cap">Lệnh điều khiển đi ngược chiều (app/Zalo → máy chủ → gateway → trạm), luôn cần xác nhận và được ghi lại.</p>
+  </section>
+
+  <section id="tram">
+    <div class="sec-head"><span class="eyebrow">Bên trong trạm tại ao</span><h2>Một tủ điện nhỏ, linh kiện công nghiệp</h2></div>
+    <div class="figure">
+      <svg class="ill" viewBox="0 0 900 430" role="img" aria-label="Sơ đồ bên trong tủ trạm: ESP32, LoRa, RS485, rơ-le, contactor, ắc quy, đo dòng, công tắc 3 vị trí; cảm biến bên trái, quạt bên phải">
+        <!-- probes left -->
+        <text x="40" y="70" class="ts" style="font-weight:700;letter-spacing:.06em">CẢM BIẾN RS485</text>
+        <path d="M250 182 H 200 V 120 H 70 V 300" class="s-ink"/>
+        <path d="M110 120 V 300 M150 120 V 300" class="s-ink"/>
+        <rect x="63" y="300" width="14" height="50" rx="4" class="f-acc"/><text x="70" y="372" text-anchor="middle" class="t">DO</text>
+        <rect x="103" y="300" width="14" height="50" rx="4" class="f-acc"/><text x="110" y="372" text-anchor="middle" class="t">pH</text>
+        <rect x="143" y="300" width="14" height="50" rx="4" class="f-acc"/><text x="150" y="372" text-anchor="middle" class="t">EC</text>
+        <path d="M40 260 H 190" class="s-mut" stroke-dasharray="4 4"/><text x="40" y="252" class="ts">mặt nước</text>
+        <!-- cabinet -->
+        <rect x="250" y="40" width="380" height="360" rx="14" class="f-surf s-line" style="stroke-width:2.5"/>
+        <text x="270" y="68" class="ts" style="font-weight:700;letter-spacing:.06em">TỦ IP66 · CHỐNG SÉT</text>
+        <rect x="270" y="86" width="160" height="70" rx="8" class="f-accs s-acc"/><text x="350" y="116" text-anchor="middle" class="t">ESP32-S3</text><text x="350" y="136" text-anchor="middle" class="ts">bộ não · watchdog</text>
+        <rect x="450" y="86" width="160" height="70" rx="8" class="f-surf2"/><text x="530" y="116" text-anchor="middle" class="t">Module LoRa</text><text x="530" y="136" text-anchor="middle" class="ts">SX1262 · 920 MHz</text>
+        <path d="M590 86 V 20" class="s-ink"/><circle cx="590" cy="16" r="5" class="f-acc"/>
+        <path d="M602 12 a10 10 0 0 1 0 14" class="wave"/><path d="M610 6 a18 18 0 0 1 0 26" class="wave d2"/>
+        <text x="620" y="50" class="ts">ăng-ten ra ngoài tủ</text>
+        <rect x="270" y="170" width="160" height="50" rx="8" class="f-surf2"/><text x="350" y="200" text-anchor="middle" class="t">RS485 · Modbus</text>
+        <rect x="450" y="170" width="160" height="50" rx="8" class="f-surf2"/><text x="530" y="200" text-anchor="middle" class="t">Rơ-le trung gian</text>
+        <rect x="270" y="234" width="160" height="70" rx="8" class="f-surf2"/><text x="350" y="264" text-anchor="middle" class="t">Ắc quy + sạc</text><text x="350" y="284" text-anchor="middle" class="ts">giữ trạm 6–12 giờ</text>
+        <rect x="450" y="234" width="160" height="70" rx="8" class="f-surf2"/>
+        <rect x="462" y="246" width="38" height="46" rx="4" class="f-metal"/><rect x="511" y="246" width="38" height="46" rx="4" class="f-metal"/><rect x="560" y="246" width="38" height="46" rx="4" class="f-metal"/>
+        <text x="530" y="324" text-anchor="middle" class="t">Khởi động từ (contactor)</text>
+        <rect x="270" y="336" width="160" height="48" rx="8" class="f-surf2"/><text x="350" y="365" text-anchor="middle" class="t">Đo dòng từng quạt</text>
+        <rect x="450" y="340" width="160" height="44" rx="8" class="f-warn" opacity=".18"/><text x="530" y="367" text-anchor="middle" class="t">Tự động · Tắt · Tay</text>
+        <!-- fans right -->
+        <path d="M612 269 H 700" class="s-ink"/>
+        <path d="M700 150 V 380 M700 150 H 740 M700 227 H 740 M700 304 H 740 M700 380 H 740" class="s-ink"/>
+        <g class="spin"><circle cx="760" cy="150" r="18" class="s-ink"/><path d="M760 132v36M742 150h36" class="s-ink"/></g>
+        <g class="spin"><circle cx="760" cy="227" r="18" class="s-ink"/><path d="M760 209v36M742 227h36" class="s-ink"/></g>
+        <g class="spin"><circle cx="760" cy="304" r="18" class="s-ink"/><path d="M760 286v36M742 304h36" class="s-ink"/></g>
+        <g class="spin"><circle cx="760" cy="380" r="18" class="s-ink"/><path d="M760 362v36M742 380h36" class="s-ink"/></g>
+        <text x="790" y="155" class="t">Quạt 1</text><text x="790" y="232" class="t">Quạt 2</text><text x="790" y="309" class="t">Quạt 3</text><text x="790" y="385" class="t">Quạt 4</text>
+        <path d="M440 400 V 420" class="s-ink"/><text x="450" y="420" class="ts">Nguồn 220/380V</text>
+      </svg>
+    </div>
+    <p class="cap">Mất cảm biến hoặc mất mạng, trạm giữ quạt chạy. Công tắc 3 vị trí luôn cho công nhân chạy tay.</p>
+  </section>
+
+  <section id="lora">
+    <div class="sec-head">
+      <span class="eyebrow">Đường truyền</span>
+      <h2>LoRa trong vùng nuôi, 4G từ gateway lên máy chủ</h2>
+      <p class="lead">LoRa là sóng vô tuyến công suất thấp, truyền gói dữ liệu nhỏ đi xa 1–5 km, không cần SIM hay cước mạng. Rất hợp với số đo cảm biến và lệnh bật tắt quạt.</p>
+    </div>
+    <div class="figure">
+      <svg class="ill" viewBox="0 0 900 380" role="img" aria-label="Bản đồ: gateway ở nhà điều hành phủ sóng LoRa các ao trong bán kính vài km; ao ở quá xa dùng 4G trực tiếp">
+        <rect width="900" height="380" rx="12" class="f-soil"/>
+        <path d="M0 300 C 200 280, 360 330, 560 300 S 820 260, 900 280" style="stroke:var(--water-deep);stroke-width:10;fill:none"/>
+        <text x="40" y="282" class="ts">kênh cấp nước</text>
+        <circle cx="400" cy="180" r="90" class="s-dash" style="fill:var(--accent-soft)"/>
+        <circle cx="400" cy="180" r="160" class="s-dash"/>
+        <circle cx="400" cy="180" r="230" class="s-dash" opacity=".6"/>
+        <text x="400" y="84" text-anchor="middle" class="ta">~1 km</text>
+        <text x="400" y="14" text-anchor="middle" class="ta" style="font-size:11px">~2 km</text>
+        <g>
+          <rect x="250" y="120" width="70" height="44" rx="4" class="f-water"/><circle cx="314" cy="126" r="5" class="f-acc"/>
+          <rect x="250" y="190" width="70" height="44" rx="4" class="f-water"/><circle cx="314" cy="196" r="5" class="f-acc"/>
+          <rect x="470" y="110" width="80" height="50" rx="4" class="f-water"/><circle cx="544" cy="116" r="5" class="f-acc"/>
+          <rect x="470" y="180" width="80" height="50" rx="4" class="f-water"/><circle cx="544" cy="186" r="5" class="f-acc"/>
+          <rect x="560" y="40" width="70" height="44" rx="4" class="f-water"/><circle cx="624" cy="46" r="5" class="f-acc"/>
+          <rect x="140" y="230" width="70" height="44" rx="4" class="f-water"/><circle cx="204" cy="236" r="5" class="f-acc"/>
+          <rect x="590" y="230" width="70" height="44" rx="4" class="f-water"/><circle cx="654" cy="236" r="5" class="f-acc"/>
+        </g>
+        <rect x="372" y="160" width="56" height="40" rx="4" class="f-surf s-line"/><path d="M368 162 L400 140 L432 162" class="s-ink"/>
+        <path d="M400 140 V 104" class="s-ink"/><circle cx="400" cy="100" r="5" class="f-acc"/>
+        <text x="400" y="222" text-anchor="middle" class="t">Nhà điều hành</text>
+        <text x="400" y="238" text-anchor="middle" class="ts">gateway LoRa + 4G</text>
+        <rect x="790" y="300" width="80" height="50" rx="4" class="f-water"/><circle cx="864" cy="306" r="5" class="f-warn"/>
+        <text x="830" y="290" text-anchor="middle" class="t">Ao lẻ xa</text>
+        <text x="830" y="370" text-anchor="middle" class="ts">dùng 4G trực tiếp</text>
+        <rect x="24" y="24" width="160" height="56" rx="8" class="f-surf"/>
+        <circle cx="42" cy="44" r="5" class="f-acc"/><text x="54" y="48" class="ts">trạm LoRa</text>
+        <circle cx="42" cy="64" r="5" class="f-warn"/><text x="54" y="68" class="ts">trạm 4G</text>
+      </svg>
+    </div>
+    <p class="cap">Vòng tròn chỉ để minh họa. Tầm phủ thật phụ thuộc chiều cao ăng-ten, cây cối, nhà cửa; sẽ đo thực tế khi khảo sát.</p>
+
+    <div class="vs">
+      <div class="card pick">
+        <h3>LoRa <span class="badge">Đề xuất trong khu</span></h3>
+        <div class="meter">Chi phí tháng<div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></div></div>
+        <div class="meter">Tầm xa<div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div></div>
+        <div class="meter">Dung lượng<div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></div></div>
+        <div class="meter">Tự chủ<div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div></div>
+        <ul><li>Không cước, không phụ thuộc nhà mạng</li><li>Rất ít điện, chạy pin mặt trời được</li><li>Chỉ hợp gói nhỏ: số đo, lệnh bật tắt</li><li>Không truyền được camera</li></ul>
+      </div>
+      <div class="card">
+        <h3>4G</h3>
+        <div class="meter">Chi phí tháng<div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+        <div class="meter">Tầm xa<div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div></div>
+        <div class="meter">Dung lượng<div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div></div>
+        <div class="meter">Tự chủ<div class="dots"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div></div>
+        <ul><li>Mỗi trạm một SIM, một khoản cước</li><li>Mất sóng hoặc nghẽn mạng là mất kết nối</li><li>Truyền được ảnh, camera</li><li>Hợp cho gateway và ao lẻ ở xa</li></ul>
+      </div>
+      <div class="card">
+        <h3>Kết hợp <span class="badge" style="background:var(--surface-2);color:var(--ink)">Thiết kế này</span></h3>
+        <ul><li>Các ao trong khu → LoRa → gateway</li><li>Gateway → 4G lên máy chủ, thêm internet cáp nếu có</li><li>Ao lẻ xa → 4G trực tiếp</li><li>Báo động khẩn đi bằng SIM gọi điện của gateway</li><li>Mất 4G: trạm vẫn tự xử lý, dữ liệu lưu thẻ nhớ rồi gửi bù</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="cam-bien">
+    <div class="sec-head"><span class="eyebrow">Thiết bị đo</span><h2>Đo đúng thứ quyết định sống còn của ao</h2></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Thông số</th><th>Thiết bị</th><th>Mức</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td><b>Oxy hòa tan</b></td><td>Cảm biến quang học RS485</td><td><span class="chip must">Bắt buộc</span></td><td>Ít bảo trì hơn loại màng</td></tr>
+        <tr><td><b>Nhiệt độ</b></td><td>Đầu dò chống nước</td><td><span class="chip must">Bắt buộc</span></td><td>Ao sâu: đo mặt và đáy</td></tr>
+        <tr><td><b>Dòng điện quạt</b></td><td>Kẹp dòng CT</td><td><span class="chip must">Bắt buộc</span></td><td>Biết quạt có chạy thật</td></tr>
+        <tr><td><b>Điện lưới</b></td><td>Đo điện áp + pin</td><td><span class="chip must">Bắt buộc</span></td><td>Báo ngay khi cúp điện</td></tr>
+        <tr><td><b>pH</b></td><td>Điện cực công nghiệp RS485</td><td><span class="chip should">Nên có</span></td><td>Hiệu chuẩn 2–4 tuần</td></tr>
+        <tr><td><b>Độ mặn</b></td><td>Điện cực EC RS485</td><td><span class="chip should">Nên có</span></td><td>Tôm nước lợ, mùa mưa</td></tr>
+        <tr><td><b>NH₃, NO₂, kiềm</b></td><td>Test kit + ảnh cho AI đọc</td><td><span class="chip later">Giai đoạn 2</span></td><td>Rẻ, thực tế hơn cảm biến online</td></tr>
+        <tr><td><b>Camera</b></td><td>Camera IP 4G/WiFi</td><td><span class="chip later">Tùy chọn</span></td><td>Mặt ao, an ninh</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="nguong">
+    <div class="sec-head"><span class="eyebrow">Luật cảnh báo</span><h2>Ngưỡng ban đầu, hiệu chỉnh cùng kỹ thuật của trại</h2></div>
+    <div class="tabs" role="tablist" aria-label="Đối tượng nuôi">
+      <button role="tab" id="tab-tom" aria-selected="true" aria-controls="panel-tom">Tôm thẻ</button>
+      <button role="tab" id="tab-ca" aria-selected="false" aria-controls="panel-ca">Cá</button>
+    </div>
+    <div id="panel-tom" role="tabpanel" aria-labelledby="tab-tom" class="tbl-wrap"><table>
+      <thead><tr><th>Thông số</th><th>Tốt</th><th>Cảnh báo</th><th>Khẩn cấp</th></tr></thead>
+      <tbody>
+        <tr><td><b>DO</b> mg/L</td><td class="num g">≥ 5</td><td class="num w">4 – 5</td><td class="num r">&lt; 4</td></tr>
+        <tr><td><b>Nhiệt độ</b> °C</td><td class="num g">28 – 32</td><td class="num w">26–28 · 32–34</td><td class="num r">&lt; 25 · &gt; 34</td></tr>
+        <tr><td><b>pH</b></td><td class="num g">7,5 – 8,5</td><td class="num w">7,2–7,5 · 8,5–8,8</td><td class="num r">dao động ngày &gt; 0,5</td></tr>
+        <tr><td><b>Độ mặn</b> ‰</td><td class="num g">10 – 25</td><td class="num w">đổi &gt; 3 / 24h</td><td class="num r">đổi &gt; 5 / 24h</td></tr>
+        <tr><td><b>Kiềm</b> mg/L</td><td class="num g">120 – 180</td><td class="num w">100 – 120</td><td class="num r">&lt; 100</td></tr>
+        <tr><td><b>NH₃</b> mg/L</td><td class="num g">&lt; 0,05</td><td class="num w">0,05 – 0,1</td><td class="num r">&gt; 0,1</td></tr>
+        <tr><td><b>NO₂</b> mg/L</td><td class="num g">&lt; 0,5</td><td class="num w">0,5 – 1</td><td class="num r">&gt; 1</td></tr>
+      </tbody>
+    </table></div>
+    <div id="panel-ca" role="tabpanel" aria-labelledby="tab-ca" class="tbl-wrap" hidden><table>
+      <thead><tr><th>Thông số</th><th>Cá tra</th><th>Rô phi, điêu hồng</th></tr></thead>
+      <tbody>
+        <tr><td><b>DO</b> mg/L</td><td class="num">cảnh báo &lt; 3 · khẩn &lt; 2</td><td class="num">cảnh báo &lt; 4 · khẩn &lt; 3</td></tr>
+        <tr><td><b>Nhiệt độ</b> °C</td><td class="num">26 – 30</td><td class="num">25 – 32</td></tr>
+        <tr><td><b>pH</b></td><td class="num">6,5 – 8,5</td><td class="num">6,5 – 8,5</td></tr>
+      </tbody>
+    </table></div>
+    <div class="rules">
+      <div class="card rule"><span class="if">NẾU <b>DO &lt; ngưỡng vàng</b></span><span class="then">Bật quạt dự phòng, nhắn kỹ thuật</span></div>
+      <div class="card rule"><span class="if">NẾU <b>DO &lt; ngưỡng đỏ</b></span><span class="then">Bật hết quạt, gọi điện; 5 phút chưa xác nhận thì gọi quản lý, bật còi</span></div>
+      <div class="card rule"><span class="if">NẾU <b>quạt có lệnh nhưng dòng = 0</b></span><span class="then">Báo "quạt hỏng hoặc nhảy CB" kèm tên quạt</span></div>
+      <div class="card rule"><span class="if">NẾU <b>mất điện lưới</b></span><span class="then">Gọi ngay người trực để chạy máy phát</span></div>
+      <div class="card rule"><span class="if">NẾU <b>DO giảm &gt; 1 mg/L trong 30 phút về đêm</b></span><span class="then">Cảnh báo sớm dù chưa chạm ngưỡng</span></div>
+      <div class="card rule"><span class="if">NẾU <b>cảm biến đứng số &gt; 30 phút</b></span><span class="then">Báo kiểm tra cảm biến, không dùng để điều khiển</span></div>
+    </div>
+  </section>
+
+  <section id="ben-bi">
+    <div class="sec-head"><span class="eyebrow">Độ bền</span><h2>Thiết bị ngoài ao phải bền như người nuôi</h2></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Rủi ro</th><th>Cách xử lý</th></tr></thead>
+      <tbody>
+        <tr><td><b>Cảm biến bám rong, trôi số</b></td><td>Vệ sinh hằng tuần, hiệu chuẩn định kỳ, phần mềm tự phát hiện trôi số</td></tr>
+        <tr><td><b>Ẩm, hơi muối, sét</b></td><td>Tủ IP65–IP67, chống sét lan truyền, mạch phủ chống ẩm</td></tr>
+        <tr><td><b>Mất mạng, mất điện</b></td><td>Luật chạy trên trạm, thẻ nhớ, pin dự phòng, gọi điện qua SIM</td></tr>
+        <tr><td><b>Báo động sai</b></td><td>Lọc nhiễu, xác nhận nhiều lần đọc, ngưỡng riêng từng ao</td></tr>
+        <tr><td><b>AI trả lời sai</b></td><td>AI chỉ đọc số liệu và gợi ý; lệnh quan trọng luôn cần người xác nhận</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="khao-sat">
+    <div class="sec-head"><span class="eyebrow">Buổi khảo sát</span><h2>Thông tin kỹ thuật cần trao đổi</h2></div>
+    <div class="qs">
+      <div class="card q">Số vùng nuôi, số ao mỗi vùng, diện tích, loài nuôi</div>
+      <div class="card q">Ao đất, lót bạt hay tuần hoàn? Mật độ thả?</div>
+      <div class="card q">Sự cố các vụ gần đây và nguyên nhân</div>
+      <div class="card q">Hiện đo nước bằng gì, ai đo, ghi ở đâu</div>
+      <div class="card q">Số quạt, bơm mỗi ao; điện 1 pha hay 3 pha; máy phát dự phòng</div>
+      <div class="card q">Khoảng cách các ao tới nhà điều hành; sóng 4G từng khu</div>
+      <div class="card q">Mã cơ sở nuôi và chứng nhận đang có hoặc cần (VietGAP, ASC, BAP)</div>
+      <div class="card q">Phần mềm, thiết bị cần kết nối: kế toán, kho, camera</div>
+    </div>
+  </section>
+
+  <div class="cta">
+    <div><h2>Quay lại phần Giá trị</h2><p>Lợi ích, truy xuất nguồn gốc, tính hiệu quả đầu tư và lộ trình.</p></div>
+    <button type="button" id="go-value">← Xem phần Giá trị</button>
+  </div>
+</div>
+
+<footer>
+  <div>
+    <strong>Lý Minh Châu</strong>
+    <p style="margin-top:8px">Giải pháp IoT và trợ lý AI cho vùng nuôi thủy sản. Kế hoạch này do Lý Minh Châu xây dựng cùng trợ lý AI; ngưỡng, chi phí và lộ trình sẽ điều chỉnh sau khảo sát thực tế.</p>
+  </div>
+  <div class="src">
+    <strong style="font-size:.88rem">Tham khảo</strong>
+    <a href="https://apidocs.nhanh.vn/v3/zalo" target="_blank" rel="noopener">Giờ gửi tin mẫu Zalo ZBS (6h–22h)</a>
+    <a href="https://baodautu.vn/sot-ruot-voi-cap-ma-so-ao-nuoi-tom-d139191.html" target="_blank" rel="noopener">Mã số ao nuôi tôm và yêu cầu truy xuất · Báo Đầu tư</a>
+    <a href="https://repository.sgu.ac.id/items/850a0267-710a-42dd-9ce1-5cdb6c5fd1dd/full" target="_blank" rel="noopener">Trạm LoRa đo nước ao tôm, ESP32 + năng lượng mặt trời</a>
+  </div>
+</footer>
+</main>
+
+<script>
+(function () {
+  /* ---------- views ---------- */
+  var vValue = document.getElementById('view-value'), vTech = document.getElementById('view-tech');
+  var bValue = document.getElementById('btn-value'), bTech = document.getElementById('btn-tech');
+  var nValue = document.getElementById('nav-value'), nTech = document.getElementById('nav-tech');
+  function show(which, scroll) {
+    var tech = which === 'tech';
+    vValue.hidden = tech; vTech.hidden = !tech; nValue.hidden = tech; nTech.hidden = !tech;
+    bValue.setAttribute('aria-pressed', !tech); bTech.setAttribute('aria-pressed', tech);
+    try { history.replaceState(null, '', tech ? '#cong-nghe' : '#gia-tri'); } catch (e) {}
+    if (scroll) window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+  bValue.addEventListener('click', function () { show('value', true); });
+  bTech.addEventListener('click', function () { show('tech', true); });
+  document.getElementById('go-tech').addEventListener('click', function () { show('tech', true); });
+  document.getElementById('go-value').addEventListener('click', function () { show('value', true); });
+  var h = (location.hash || '').slice(1);
+  if (h === 'cong-nghe' || (h && document.getElementById(h) && vTech.contains(document.getElementById(h)))) {
+    show('tech', false);
+    if (h !== 'cong-nghe') setTimeout(function () { var t = document.getElementById(h); if (t) t.scrollIntoView(); }, 50);
+  }
+
+  /* ---------- night chart ---------- */
+  var svg = document.getElementById('night-chart'), ns = 'http://www.w3.org/2000/svg';
+  var W = 760, H = 300, L = 40, R = 20, T = 20, B = 34;
+  var x = function (hh) { return L + hh / 12 * (W - L - R); }, y = function (v) { return T + (1 - v / 8) * (H - T - B); };
+  var base = [[0,7.2],[1,6.8],[2,6.3],[3,5.8],[4,5.3],[5,4.8],[6,4.35],[6.5,4.05]];
+  var bad = base.concat([[7,3.85],[7.5,3.55],[8,3.25],[8.5,2.95],[9,2.65],[9.5,2.4],[10,2.15],[10.5,1.95],[11,2.05],[11.5,2.55],[12,3.3]]);
+  var good = base.concat([[7,4.25],[7.5,4.6],[8,4.85],[8.5,5.0],[9,4.95],[9.5,4.85],[10,4.75],[10.5,4.8],[11,5.0],[11.5,5.45],[12,6.0]]);
+  var d = function (p) { return p.map(function (q, i) { return (i ? 'L' : 'M') + x(q[0]).toFixed(1) + ' ' + y(q[1]).toFixed(1); }).join(''); };
+  var el = function (t, a, tx) { var e = document.createElementNS(ns, t); for (var k in a) e.setAttribute(k, a[k]); if (tx != null) e.textContent = tx; svg.appendChild(e); return e; };
+  var mono = 'Roboto Mono, monospace', sans = 'Be Vietnam Pro, sans-serif', mut = '#8DA9A8';
+  el('rect', { x: L, y: y(3), width: W - L - R, height: y(0) - y(3), fill: 'rgba(240,106,94,.10)' });
+  [0,2,4,6,8].forEach(function (v) { el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: '#24403F' }); el('text', { x: L - 8, y: y(v) + 4, 'text-anchor': 'end', fill: mut, 'font-size': 11, 'font-family': mono }, v); });
+  ['18h','20h','22h','0h','2h','4h','6h'].forEach(function (t, i) { el('text', { x: x(i * 2), y: H - 10, 'text-anchor': 'middle', fill: mut, 'font-size': 11, 'font-family': mono }, t); });
+  el('line', { x1: L, x2: W - R, y1: y(4), y2: y(4), stroke: '#E6B23C', 'stroke-width': 1.5, 'stroke-dasharray': '5 5' });
+  el('text', { x: W - R - 6, y: y(0.5), 'text-anchor': 'end', fill: '#F07A6E', 'font-size': 11.5, 'font-family': sans }, 'Vùng nguy hiểm < 3 mg/L');
+  var p1 = el('path', { d: d(bad), fill: 'none', stroke: '#F07A6E', 'stroke-width': 2.5, 'stroke-linejoin': 'round' });
+  var p2 = el('path', { d: d(good), fill: 'none', stroke: '#7FE0D6', 'stroke-width': 3.2, 'stroke-linejoin': 'round' });
+  var kx = x(6.5), ky = y(4.05);
+  el('line', { x1: kx, x2: kx, y1: ky - 8, y2: y(7.2), stroke: '#7FE0D6', 'stroke-dasharray': '2 3' });
+  el('circle', { cx: kx, cy: ky, r: 6, fill: '#0E2327', stroke: '#7FE0D6', 'stroke-width': 2.5 });
+  el('text', { x: kx + 8, y: y(7.4), fill: '#DCEBE8', 'font-size': 13, 'font-weight': 700, 'font-family': sans }, '00:30 · trạm tự bật thêm 2 quạt');
+  var lx = x(10.5), ly = y(1.95);
+  el('circle', { cx: lx, cy: ly, r: 5, fill: '#F07A6E' });
+  el('text', { x: lx - 10, y: ly + 20, 'text-anchor': 'end', fill: '#F07A6E', 'font-size': 12.5, 'font-weight': 700, 'font-family': sans }, '04:30 · tôm nổi đầu');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce && p2.getTotalLength && p2.animate) [p1, p2].forEach(function (p, i) { var len = p.getTotalLength(); p.style.strokeDasharray = len; p.animate([{ strokeDashoffset: len * .45 }, { strokeDashoffset: 0 }], { duration: 1500, delay: 150 + i * 200, easing: 'ease-out' }); });
+
+  /* ---------- illustrative QR ---------- */
+  function qr(target, n, cell, colorVar) {
+    var g = target, seed = 7;
+    var rnd = function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    var add = function (xx, yy, w, hh) { var r = document.createElementNS(ns, 'rect'); r.setAttribute('x', xx * cell); r.setAttribute('y', yy * cell); r.setAttribute('width', w * cell); r.setAttribute('height', hh * cell); r.setAttribute('fill', colorVar); g.appendChild(r); };
+    var finder = function (fx, fy) { add(fx, fy, 7, 1); add(fx, fy + 6, 7, 1); add(fx, fy, 1, 7); add(fx + 6, fy, 1, 7); add(fx + 2, fy + 2, 3, 3); };
+    var inF = function (i, j) { return (i < 8 && j < 8) || (i >= n - 8 && j < 8) || (i < 8 && j >= n - 8); };
+    for (var i = 0; i < n; i++) for (var j = 0; j < n; j++) if (!inF(i, j) && rnd() > .52) add(i, j, 1, 1);
+    finder(0, 0); finder(n - 7, 0); finder(0, n - 7);
+  }
+  qr(document.getElementById('big-qr'), 25, 1, 'var(--ink)');
+  qr(document.getElementById('mini-qr'), 23, 2, 'var(--ink)');
+
+  /* ---------- tabs ---------- */
+  var tabs = [document.getElementById('tab-tom'), document.getElementById('tab-ca')];
+  tabs.forEach(function (t) { t.addEventListener('click', function () { tabs.forEach(function (o) { var on = o === t; o.setAttribute('aria-selected', on); document.getElementById(o.getAttribute('aria-controls')).hidden = !on; }); }); });
+
+  /* ---------- ROI ---------- */
+  var ids = ['ponds','yield','price','incidents','loss','saved','elec','months','esave','capex','opex'];
+  var num = function (id) { var v = parseFloat(document.getElementById(id).value); return isFinite(v) && v >= 0 ? v : 0; };
+  var money = function (v) { return v >= 1e9 ? (v / 1e9).toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' tỷ đ' : Math.round(v / 1e6).toLocaleString('vi-VN') + ' triệu đ'; };
+  var set = function (id, t) { document.getElementById(id).textContent = t; };
+  function calc() {
+    var ponds = num('ponds'), pv = num('yield') * num('price');
+    var avoid = num('incidents') * pv * num('loss') / 100 * num('saved') / 100;
+    var elec = ponds * num('elec') * 1e6 * num('months') * num('esave') / 100;
+    var benefit = avoid + elec, capex = ponds * num('capex') * 1e6, opex = ponds * num('opex') * 1e6 * 12, net = benefit - opex;
+    set('o-pond', money(pv)); set('o-avoid', money(avoid)); set('o-elec', money(elec)); set('o-benefit', money(benefit)); set('o-capex', money(capex)); set('o-opex', money(opex));
+    set('o-payback', net <= 0 ? 'Chưa hoàn vốn' : ((capex / net * 12) < 1 ? '< 1' : (capex / net * 12).toLocaleString('vi-VN', { maximumFractionDigits: 1 })) + ' tháng');
+    var m = Math.max(benefit, capex, 1);
+    document.getElementById('b-benefit').style.width = benefit / m * 100 + '%';
+    document.getElementById('b-capex').style.width = capex / m * 100 + '%';
+    var per = num('capex') * 1e6;
+    set('o-equiv', per > 0 && pv > 0 ? 'Giá trị một ao mỗi vụ bằng chi phí lắp khoảng ' + Math.floor(pv / per).toLocaleString('vi-VN') + ' trạm.' : '');
+  }
+  ids.forEach(function (id) { document.getElementById(id).addEventListener('input', calc); });
+  document.getElementById('calc').addEventListener('submit', function (e) { e.preventDefault(); });
+  calc();
+})();
+</script>
+
+</body>
+</html>

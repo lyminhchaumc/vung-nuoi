@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Truy Xuất Lô Tôm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: trang điện thoại một cột (tối đa 760px) như khi người mua quét QR; mỗi khối có nhãn "nguồn dữ liệu" màu riêng; con dấu niêm phong màu vàng đồng là điểm nhấn duy nhất. */
+:root {
+  --bg: #F1F5F3;
+  --surface: #FFFFFF;
+  --surface-2: #E6EEEB;
+  --ink: #102A2D;
+  --muted: #56696B;
+  --line: #D3DEDA;
+  --accent: #0B7A73;
+  --accent-soft: rgba(11,122,115,.10);
+  --seal: #9A6B12;
+  --seal-soft: rgba(176,124,24,.12);
+  --good: #2D8A4B; --good-soft: rgba(45,138,75,.12);
+  --warn: #B47706; --warn-soft: rgba(201,138,11,.14);
+  --crit: #C2362B; --crit-soft: rgba(194,54,43,.10);
+  --src-sensor: #0B7A73;
+  --src-staff: #2F64B5;
+  --src-cam: #7A4FB0;
+  --src-3rd: #9A6B12;
+  --water: #9CCBC4; --water-2: #6FA9A1;
+  --cam-bg: #1D3A35; --cam-ink: #E9F5F1;
+  --font-display: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --font-data: "Roboto Mono", ui-monospace, Menlo, monospace;
+}
+
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55; padding-inline: 16px; padding-block: 0 48px; }
+.page { max-width: 760px; margin-inline: auto; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1.2; text-wrap: balance; }
+h2 { font-size: 1.15rem; font-weight: 800; }
+h3 { font-size: .98rem; font-weight: 700; }
+p { margin: 0; }
+.mono { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+button { font: inherit; cursor: pointer; }
+
+/* demo banner */
+.demo { margin-inline: -16px; padding: 8px 16px; background: var(--warn-soft); color: var(--ink); font-size: .8rem; display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.demo b { color: var(--warn); }
+.switches { display: flex; gap: 6px; flex-wrap: wrap; }
+.seg { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 2px; }
+.seg button { border: 0; background: transparent; color: var(--muted); font-size: .76rem; font-weight: 700; padding: 5px 9px; border-radius: 6px; white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
+/* header */
+.head { padding-block: 22px 14px; display: grid; gap: 12px; }
+.brandline { display: flex; align-items: center; gap: 10px; font-size: .82rem; color: var(--muted); }
+.logo { width: 34px; height: 34px; border-radius: 10px; background: var(--accent); display: grid; place-items: center; color: #fff; flex: none; }
+.logo svg { width: 22px; height: 22px; }
+.product { display: grid; grid-template-columns: 96px minmax(0,1fr); gap: 14px; align-items: center; }
+.product-img { width: 96px; height: 96px; border-radius: 16px; background: var(--accent-soft); display: grid; place-items: center; }
+.product h1 { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.01em; }
+.lot { font-family: var(--font-data); font-size: .85rem; color: var(--muted); margin-top: 4px; }
+.seal-bar { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 14px; background: var(--seal-soft); border: 1px solid color-mix(in srgb, var(--seal) 40%, transparent); }
+.seal-ic { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--seal); color: var(--seal); display: grid; place-items: center; }
+.seal-ic svg { width: 22px; height: 22px; }
+.seal-bar b { display: block; font-size: .92rem; }
+.seal-bar span { font-size: .78rem; color: var(--muted); }
+.btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 9px; padding: 7px 12px; font-size: .82rem; font-weight: 700; white-space: nowrap; }
+.btn.primary { background: var(--seal); border-color: var(--seal); color: #fff; }
+
+/* nav chips */
+.chips { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; margin-inline: -16px; padding: 8px 16px; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chips a { flex: none; text-decoration: none; color: var(--ink); font-size: .8rem; font-weight: 600; padding: 6px 11px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); }
+
+/* sections */
+section { padding-top: 26px; scroll-margin-top: 60px; display: grid; gap: 12px; }
+.sec-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; min-width: 0; }
+.src { display: inline-flex; align-items: center; gap: 6px; font-size: .7rem; font-weight: 700; padding: 3px 8px; border-radius: 99px; white-space: nowrap; }
+.src i { width: 7px; height: 7px; border-radius: 50%; display: block; }
+.src.sensor { color: var(--src-sensor); background: color-mix(in srgb, var(--src-sensor) 12%, transparent); } .src.sensor i { background: var(--src-sensor); }
+.src.staff { color: var(--src-staff); background: color-mix(in srgb, var(--src-staff) 12%, transparent); } .src.staff i { background: var(--src-staff); }
+.src.cam { color: var(--src-cam); background: color-mix(in srgb, var(--src-cam) 12%, transparent); } .src.cam i { background: var(--src-cam); }
+.src.third { color: var(--src-3rd); background: color-mix(in srgb, var(--src-3rd) 13%, transparent); } .src.third i { background: var(--src-3rd); }
+.note { display: grid; grid-template-columns: 22px minmax(0,1fr); gap: 8px; font-size: .82rem; padding: 10px 12px; border-radius: 10px; background: var(--accent-soft); border: 1px dashed color-mix(in srgb, var(--accent) 45%, transparent); }
+.note svg { width: 18px; height: 18px; color: var(--accent); margin-top: 2px; }
+body.hide-notes .note { display: none; }
+.partner-only { display: none !important; }
+body.partner .partner-only { display: grid !important; }
+body.partner .public-only { display: none !important; }
+.lock { display: flex; gap: 10px; align-items: center; font-size: .82rem; color: var(--muted); padding: 12px 14px; border: 1px dashed var(--line); border-radius: 12px; }
+.lock svg { width: 18px; height: 18px; flex: none; }
+
+/* key facts */
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.fact { background: var(--surface); padding: 12px; display: grid; gap: 2px; }
+.fact small { color: var(--muted); font-size: .72rem; }
+.fact strong { font-family: var(--font-data); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.fact span { font-size: .72rem; color: var(--muted); }
+.badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.badge { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 700; padding: 6px 10px; border-radius: 9px; background: var(--good-soft); color: var(--good); }
+.badge svg { width: 15px; height: 15px; }
+
+/* journey */
+.journey { display: grid; gap: 0; }
+.jstep { display: grid; grid-template-columns: 40px minmax(0,1fr); gap: 12px; position: relative; padding-bottom: 14px; }
+.jstep:not(:last-child)::before { content: ""; position: absolute; left: 19px; top: 40px; bottom: 0; border-left: 2px dashed var(--line); }
+.jdot { width: 40px; height: 40px; border-radius: 12px; background: var(--surface); border: 1.5px solid var(--line); display: grid; place-items: center; color: var(--accent); }
+.jstep.here .jdot { background: var(--accent); color: #fff; border-color: var(--accent); }
+.jdot svg { width: 22px; height: 22px; }
+.jbody { display: grid; gap: 2px; padding-top: 2px; }
+.jbody b { font-size: .92rem; }
+.jbody span { font-size: .8rem; color: var(--muted); }
+
+/* kv list */
+.kv { display: grid; gap: 0; }
+.kv div { display: grid; grid-template-columns: 132px minmax(0,1fr); gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: .86rem; }
+.kv div:last-child { border-bottom: 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.ok { color: var(--good); font-weight: 700; }
+
+/* charts */
+.chart-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.chart-head b { font-size: .9rem; }
+.chart-head span { font-size: .74rem; color: var(--muted); font-family: var(--font-data); }
+.chart svg { display: block; width: 100%; height: auto; }
+.chart text { font-family: var(--font-data); font-size: 10px; fill: var(--muted); }
+.c-grid { stroke: var(--line); stroke-width: 1; }
+.c-band { fill: var(--good-soft); }
+.c-thr { stroke: var(--warn); stroke-width: 1.2; stroke-dasharray: 4 4; fill: none; }
+.c-line { fill: none; stroke: var(--src-sensor); stroke-width: 2; stroke-linejoin: round; }
+.c-line2 { fill: none; stroke: var(--src-sensor); stroke-width: 1.2; opacity: .45; }
+.c-area { fill: var(--src-sensor); opacity: .14; }
+.c-ev { fill: var(--crit); }
+.c-bar { fill: var(--src-staff); }
+.c-bar2 { fill: var(--src-staff); opacity: .55; }
+.c-bar3 { fill: var(--src-staff); opacity: .3; }
+.c-dot { fill: var(--surface); stroke: var(--src-staff); stroke-width: 2; }
+.c-gline { fill: none; stroke: var(--src-staff); stroke-width: 2; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: .74rem; color: var(--muted); margin-top: 6px; }
+.legend i { display: inline-block; width: 12px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+.stat { padding: 10px 12px; border-radius: 10px; background: var(--surface-2); display: grid; gap: 2px; }
+.stat small { font-size: .7rem; color: var(--muted); }
+.stat strong { font-family: var(--font-data); font-size: 1.05rem; }
+.incidents { display: grid; gap: 8px; }
+.inc { display: grid; grid-template-columns: 8px minmax(0,1fr); gap: 10px; font-size: .84rem; }
+.inc::before { content: ""; width: 8px; border-radius: 4px; background: var(--crit); }
+.inc b { display: block; }
+.inc span { color: var(--muted); font-size: .78rem; }
+
+/* log */
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.filters button { border: 1px solid var(--line); background: var(--surface); color: var(--muted); font-size: .76rem; font-weight: 700; padding: 5px 10px; border-radius: 99px; }
+.filters button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.log { display: grid; gap: 0; }
+.day { font-family: var(--font-data); font-size: .72rem; color: var(--muted); padding: 12px 0 6px; letter-spacing: .03em; }
+.ev { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+.ev-ic { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; }
+.ev-ic svg { width: 22px; height: 22px; }
+.ev-ic.feed { background: color-mix(in srgb, var(--src-staff) 12%, transparent); color: var(--src-staff); }
+.ev-ic.treat { background: var(--good-soft); color: var(--good); }
+.ev-ic.water { background: var(--accent-soft); color: var(--accent); }
+.ev-ic.health { background: var(--seal-soft); color: var(--seal); }
+.ev-ic.alert { background: var(--crit-soft); color: var(--crit); }
+.ev-ic.cam { background: color-mix(in srgb, var(--src-cam) 12%, transparent); color: var(--src-cam); }
+.ev-main { display: grid; gap: 3px; min-width: 0; }
+.ev-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.ev-top b { font-size: .88rem; }
+.ev-top time { font-family: var(--font-data); font-size: .72rem; color: var(--muted); white-space: nowrap; }
+.ev-main p { font-size: .8rem; color: var(--muted); }
+.ev-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: .7rem; color: var(--muted); }
+.ev-meta .pill { font-family: var(--font-data); padding: 1px 6px; border-radius: 5px; background: var(--surface-2); }
+.more { justify-self: center; }
+
+/* tables */
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .82rem; }
+th, td { text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: .68rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+tr:last-child td { border-bottom: 0; }
+td.n { font-family: var(--font-data); white-space: nowrap; text-align: right; }
+th.n { text-align: right; }
+
+/* camera */
+.cams { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+.cam { border-radius: 12px; overflow: hidden; background: var(--cam-bg); position: relative; }
+.cam svg { display: block; width: 100%; height: auto; }
+.cam figcaption { padding: 8px 10px; font-size: .76rem; color: var(--cam-ink); background: rgba(0,0,0,.25); }
+.cam figcaption b { display: block; font-size: .8rem; }
+
+/* farm map */
+.farm svg { display: block; width: 100%; height: auto; }
+
+/* seal verify */
+.chain { display: grid; gap: 6px; }
+.blk { display: grid; grid-template-columns: 82px minmax(0,1fr) 22px; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 9px; background: var(--surface-2); font-size: .76rem; }
+.blk .h { font-family: var(--font-data); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+.blk .st { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: .7rem; font-weight: 800; color: #fff; background: var(--muted); }
+.blk.okb .st { background: var(--good); }
+.blk.bad { background: var(--crit-soft); }
+.blk.bad .st { background: var(--crit); }
+.verify-out { padding: 12px 14px; border-radius: 12px; font-size: .86rem; display: none; }
+.verify-out.show { display: block; }
+.verify-out.okv { background: var(--good-soft); }
+.verify-out.badv { background: var(--crit-soft); }
+.vrow { display: flex; gap: 8px; flex-wrap: wrap; }
+.checks { display: grid; gap: 8px; }
+.check { display: grid; grid-template-columns: 22px minmax(0,1fr) auto; gap: 10px; align-items: center; font-size: .84rem; }
+.check .tick { width: 22px; height: 22px; border-radius: 50%; background: var(--good); color: #fff; display: grid; place-items: center; font-size: .72rem; font-weight: 800; }
+.check .v { font-family: var(--font-data); font-size: .78rem; color: var(--muted); text-align: right; }
+.bar { height: 10px; border-radius: 5px; background: var(--surface-2); overflow: hidden; display: flex; }
+.bar i { display: block; height: 100%; }
+
+/* label */
+.label { display: grid; grid-template-columns: minmax(0,1fr) 148px; gap: 14px; align-items: center; border: 2px solid var(--ink); border-radius: 14px; padding: 14px; background: var(--surface); }
+.label h3 { font-size: 1rem; }
+.label .lk { font-family: var(--font-data); font-size: .76rem; display: grid; gap: 2px; margin-top: 6px; }
+.qrbox { background: #fff; padding: 8px; border-radius: 8px; }
+.qrbox svg { display: block; width: 100%; height: auto; }
+
+.cert { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); padding: 18px; display: grid; gap: 12px; position: relative; overflow: hidden; }
+.cert::after { content: "MẪU"; position: absolute; right: -10px; top: 18px; transform: rotate(18deg); font-weight: 800; font-size: 2.4rem; letter-spacing: .2em; color: var(--warn); opacity: .18; }
+.cert h3 { text-align: center; font-size: 1.05rem; letter-spacing: .02em; }
+.cert .sub { text-align: center; font-size: .78rem; color: var(--muted); }
+.sign { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; font-size: .78rem; text-align: center; color: var(--muted); }
+.sign b { display: block; color: var(--ink); margin-top: 24px; }
+
+footer { margin-top: 36px; padding-top: 18px; border-top: 1px solid var(--line); font-size: .8rem; color: var(--muted); display: grid; gap: 6px; }
+footer b { color: var(--ink); }
+
+@media (max-width: 560px) {
+  .facts { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .cams { grid-template-columns: minmax(0,1fr); }
+  .kv div { grid-template-columns: 110px minmax(0,1fr); }
+  .label { grid-template-columns: minmax(0,1fr) 112px; }
+  .seal-bar { grid-template-columns: auto minmax(0,1fr); }
+  .seal-bar .btn { grid-column: 1 / -1; }
+  .product { grid-template-columns: 72px minmax(0,1fr); }
+  .product-img { width: 72px; height: 72px; }
+}
+</style>
+<style>[hidden]{display:none!important} img{max-width:100%} :root{color-scheme:light}</style>
+<meta name="description" content="Trang truy xuất nguồn gốc mẫu cho một lô tôm – dữ liệu minh họa">
+</head>
+<body>
+
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-shrimp" viewBox="0 0 32 32"><path d="M8 20c-2-6 2-13 10-13 5 0 8 3 8 6 0 4-4 6-8 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18 18c-3 1-6 3-6 6l-3 2M12 24l-4-1M11 11l-4-5M14 9l-2-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="21" cy="11" r="1.4" fill="currentColor"/></symbol>
+  <symbol id="i-seal" viewBox="0 0 24 24"><path d="M12 2.5l2.3 1.7 2.8-.2 1 2.6 2.4 1.5-.6 2.8 1.3 2.5-2 2 .1 2.9-2.8.6-1.6 2.4-2.6-1.1-2.6 1.1-1.6-2.4-2.8-.6.1-2.9-2-2 1.3-2.5-.6-2.8 2.4-1.5 1-2.6 2.8.2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8.5 12.2l2.4 2.4 4.7-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10V7a4 4 0 018 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-hatch" viewBox="0 0 24 24"><path d="M3 20h18M5 20V9l7-5 7 5v11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 20v-5h6v5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-pond" viewBox="0 0 24 24"><path d="M2 9h20l-2.5 10h-15z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M5.5 13c2 1.4 4 1.4 6.5 0s4.5-1.4 6.5 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-net" viewBox="0 0 24 24"><path d="M4 5h16l-3 14H7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M6 10h12M7 14h10M10 5l-1 14M14 5l1 14" stroke="currentColor" stroke-width="1.3"/></symbol>
+  <symbol id="i-factory" viewBox="0 0 24 24"><path d="M3 20V10l5 3V10l5 3V6h4l1 4h3v10z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M2 6h12v10H2zM14 10h4l3 3v3h-7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="6" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="M3 9l2-5h14l2 5M4 9v11h16V9M3 9h18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 20v-6h6v6" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-feed" viewBox="0 0 24 24"><path d="M6 3h12l-1 4 2 14H5L7 7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M7 7h10M9.5 12h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3s6 6.5 6 11a6 6 0 01-12 0c0-4.5 6-11 6-11z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 10a1.5 1.5 0 001.3 2h11.4A1.5 1.5 0 0019 19l-5-10V3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M7.5 15h9" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-steth" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 15.5L20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 11l5-3v8l-5-3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-wave" viewBox="0 0 24 24"><path d="M2 9c3 2 5 2 8 0s5-2 8 0 3 1 4 1M2 15c3 2 5 2 8 0s5-2 8 0 3 1 4 1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+</defs></svg>
+
+<div class="page">
+  <div class="demo" role="note">
+    <span><b>TRANG MẪU</b> · dữ liệu minh họa để trình bày giải pháp</span>
+    <div class="switches">
+      <div class="seg" role="group" aria-label="Chế độ xem">
+        <button type="button" id="v-public" aria-pressed="true">Người mua</button>
+        <button type="button" id="v-partner" aria-pressed="false">Đối tác thu mua</button>
+      </div>
+      <div class="seg" role="group" aria-label="Chú thích">
+        <button type="button" id="n-on" aria-pressed="true">Có chú thích</button>
+        <button type="button" id="n-off" aria-pressed="false">Ẩn</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="head">
+    <div class="brandline">
+      <div class="logo"><svg><use href="#i-shrimp"/></svg></div>
+      <div><b style="color:var(--ink)">Vùng Nuôi Mẫu</b> · Hồ sơ truy xuất nguồn gốc</div>
+    </div>
+    <div class="product">
+      <div class="product-img" aria-hidden="true">
+        <svg viewBox="0 0 96 96" width="80" height="80"><g fill="none" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round"><path d="M22 60c-6-18 6-38 30-38 15 0 24 9 24 18 0 12-12 18-24 15"/><path d="M52 54c-9 3-18 9-18 18l-9 6M36 72l-12-3M34 34l-12-15M42 28l-6-18"/></g><circle cx="62" cy="34" r="4" fill="var(--accent)"/></svg>
+      </div>
+      <div>
+        <h1>Tôm thẻ chân trắng tươi</h1>
+        <div class="lot">Mã lô <b style="color:var(--ink)">VN-A3-2602-1009</b></div>
+        <div class="lot">Size 52 con/kg · thu hoạch 09/10/2026</div>
+      </div>
+    </div>
+    <div class="seal-bar">
+      <div class="seal-ic"><svg><use href="#i-seal"/></svg></div>
+      <div><b>Hồ sơ đã niêm phong, chưa bị chỉnh sửa</b><span id="seal-sum">96 ngày · đang tính dấu niêm phong...</span></div>
+      <a class="btn primary" href="#xac-thuc">Kiểm tra</a>
+    </div>
+  </header>
+
+  <nav class="chips" aria-label="Mục lục">
+    <a href="#tom-tat">Tóm tắt</a><a href="#hanh-trinh">Hành trình</a><a href="#con-giong">Con giống</a><a href="#nuoc-ao">Nước ao</a><a href="#nhat-ky">Nhật ký</a><a href="#vat-tu">Thức ăn, vật tư</a><a href="#camera">Camera</a><a href="#thu-hoach">Thu hoạch</a><a href="#kiem-nghiem">Kiểm nghiệm</a><a href="#xac-thuc">Xác thực</a><a href="#tem">Tem, giấy chứng nhận</a>
+  </nav>
+
+  <!-- ============ TÓM TẮT ============ -->
+  <section id="tom-tat">
+    <div class="sec-top"><h2>Tóm tắt lô hàng</h2><span class="src staff"><i></i>Tổng hợp tự động</span></div>
+    <div class="facts">
+      <div class="fact"><small>Vùng nuôi</small><strong>Khu A · Ao A3</strong><span>ao lót bạt 2.000 m²</span></div>
+      <div class="fact"><small>Thả giống</small><strong>06/07/2026</strong><span>300.000 con PL12</span></div>
+      <div class="fact"><small>Thu hoạch</small><strong>09/10/2026</strong><span>sau 96 ngày nuôi</span></div>
+      <div class="fact"><small>Sản lượng lô</small><strong>4.812 kg</strong><span>size 52 con/kg</span></div>
+      <div class="fact"><small>Tỷ lệ sống</small><strong>83,4%</strong><span>ước tính theo size</span></div>
+      <div class="fact"><small>Nước ao đạt chuẩn</small><strong id="f-safe">99,3%</strong><span>thời gian cả vụ</span></div>
+    </div>
+    <div class="badges">
+      <span class="badge"><svg><use href="#i-check"/></svg>Không dùng kháng sinh</span>
+      <span class="badge"><svg><use href="#i-check"/></svg>Kiểm nghiệm: không phát hiện dư lượng</span>
+      <span class="badge"><svg><use href="#i-check"/></svg>Con giống xét nghiệm PCR âm tính</span>
+      <span class="badge"><svg><use href="#i-check"/></svg>Chuỗi lạnh 0–4 °C</span>
+    </div>
+    <div class="note"><svg><use href="#i-info"/></svg><p><b>Cho chủ đầu tư:</b> người mua chỉ cần 10 giây đọc khối này. Mọi con số đều được hệ thống tự tính từ cảm biến, nhật ký và phiếu cân; không ai gõ tay ở đây. Các khối bên dưới là bằng chứng cho từng con số.</p></div>
+    <div class="card farm">
+      <div class="chart-head"><b>Vị trí ao trong vùng nuôi</b><span>sơ đồ minh họa</span></div>
+      <svg viewBox="0 0 680 230" role="img" aria-label="Sơ đồ khu A có 5 ao, ao A3 được tô đậm, nhà điều hành có gateway LoRa">
+        <rect x="0" y="0" width="680" height="230" rx="10" fill="var(--surface-2)"/>
+        <path d="M0 200 C 160 182, 340 214, 520 196 S 640 186, 680 190" fill="none" stroke="var(--water-2)" stroke-width="12"/>
+        <text x="16" y="222" style="fill:var(--muted);font-size:11px">kênh cấp nước</text>
+        <g>
+          <rect x="30" y="30" width="110" height="70" rx="6" fill="var(--water)" opacity=".55"/><text x="85" y="70" text-anchor="middle" style="fill:var(--ink);font-size:12px;font-weight:700">A1</text>
+          <rect x="155" y="30" width="110" height="70" rx="6" fill="var(--water)" opacity=".55"/><text x="210" y="70" text-anchor="middle" style="fill:var(--ink);font-size:12px;font-weight:700">A2</text>
+          <rect x="280" y="30" width="130" height="80" rx="6" fill="var(--water)" stroke="var(--accent)" stroke-width="3"/><text x="345" y="66" text-anchor="middle" style="fill:var(--ink);font-size:14px;font-weight:800">A3</text><text x="345" y="84" text-anchor="middle" style="fill:var(--ink);font-size:10px">lô này</text>
+          <rect x="30" y="115" width="110" height="65" rx="6" fill="var(--water)" opacity=".55"/><text x="85" y="152" text-anchor="middle" style="fill:var(--ink);font-size:12px;font-weight:700">A4</text>
+          <rect x="155" y="115" width="110" height="65" rx="6" fill="var(--water)" opacity=".55"/><text x="210" y="152" text-anchor="middle" style="fill:var(--ink);font-size:12px;font-weight:700">A5</text>
+          <circle cx="400" cy="40" r="6" fill="var(--src-sensor)"/>
+          <rect x="300" y="122" width="90" height="50" rx="6" fill="var(--surface)" stroke="var(--line)"/><text x="345" y="146" text-anchor="middle" style="fill:var(--ink);font-size:10.5px;font-weight:700">Ao lắng</text><text x="345" y="160" text-anchor="middle" style="fill:var(--muted);font-size:9.5px">xử lý nước cấp</text>
+          <rect x="470" y="60" width="110" height="60" rx="6" fill="var(--surface)" stroke="var(--line)"/><text x="525" y="86" text-anchor="middle" style="fill:var(--ink);font-size:11px;font-weight:700">Nhà điều hành</text><text x="525" y="102" text-anchor="middle" style="fill:var(--muted);font-size:9.5px">gateway LoRa + 4G</text>
+          <path d="M406 40 C 440 40, 470 60, 500 60" fill="none" stroke="var(--src-sensor)" stroke-width="1.6" stroke-dasharray="4 4"/>
+          <rect x="470" y="140" width="110" height="40" rx="6" fill="var(--surface)" stroke="var(--line)"/><text x="525" y="164" text-anchor="middle" style="fill:var(--ink);font-size:10.5px;font-weight:700">Kho vật tư</text>
+        </g>
+        <text x="600" y="30" style="fill:var(--muted);font-size:10px">N ↑</text>
+      </svg>
+      <p class="muted" style="font-size:.78rem;margin-top:6px">Mã cơ sở nuôi: <span class="mono">MSNT-XX-0000 (minh họa)</span> · tọa độ ao được lưu trong hồ sơ, hiển thị cho đối tác.</p>
+    </div>
+  </section>
+
+  <!-- ============ HÀNH TRÌNH ============ -->
+  <section id="hanh-trinh">
+    <div class="sec-top"><h2>Hành trình của lô tôm</h2><span class="src staff"><i></i>Mỗi bước có người xác nhận</span></div>
+    <div class="card">
+      <div class="journey">
+        <div class="jstep"><div class="jdot"><svg><use href="#i-hatch"/></svg></div><div class="jbody"><b>Trại giống (minh họa)</b><span>Xuất 300.000 con PL12 · 06/07/2026 · giấy kiểm dịch, PCR âm tính</span></div></div>
+        <div class="jstep here"><div class="jdot"><svg><use href="#i-pond"/></svg></div><div class="jbody"><b>Nuôi tại ao A3 · 96 ngày</b><span>06/07 – 09/10/2026 · 1.412 bản ghi nhật ký · 27.648 lần đo nước tự động</span></div></div>
+        <div class="jstep"><div class="jdot"><svg><use href="#i-net"/></svg></div><div class="jbody"><b>Thu hoạch</b><span>09/10/2026, 04:30–07:10 · cân 4.812 kg · ướp đá ngay tại bờ</span></div></div>
+        <div class="jstep"><div class="jdot"><svg><use href="#i-truck"/></svg></div><div class="jbody"><b>Vận chuyển lạnh</b><span>Xe lạnh, 2 giờ 15 phút · nhiệt độ thùng 1,2–3,4 °C (thiết bị ghi nhiệt)</span></div></div>
+        <div class="jstep"><div class="jdot"><svg><use href="#i-factory"/></svg></div><div class="jbody"><b>Cơ sở sơ chế, đóng gói (minh họa)</b><span>Nhận lô 09:40 · mã lô thành phẩm gắn với mã lô ao</span></div></div>
+        <div class="jstep"><div class="jdot"><svg><use href="#i-store"/></svg></div><div class="jbody"><b>Điểm bán</b><span>Người mua quét mã QR trên bao bì · bạn đang ở đây</span></div></div>
+      </div>
+    </div>
+    <div class="note"><svg><use href="#i-info"/></svg><p>Đây là nguyên tắc <b>"một bước trước, một bước sau"</b> mà quy định truy xuất yêu cầu. Mỗi bước nối với mã lô của bước kế tiếp, nên nếu có sự cố ở siêu thị, có thể lần ngược tới đúng ao, đúng vụ, đúng lô thức ăn.</p></div>
+  </section>
+
+  <!-- ============ CON GIỐNG ============ -->
+  <section id="con-giong">
+    <div class="sec-top"><h2>Con giống</h2><span class="src third"><i></i>Bên thứ ba + nhân viên nhập</span></div>
+    <div class="card">
+      <dl class="kv">
+        <div><dt>Loài</dt><dd>Tôm thẻ chân trắng (Litopenaeus vannamei)</dd></div>
+        <div><dt>Trại giống</dt><dd>Trại giống mẫu (minh họa)</dd></div>
+        <div><dt>Lô giống</dt><dd class="mono">PL-2607-0418</dd></div>
+        <div><dt>Giai đoạn</dt><dd>PL12 · chiều dài trung bình 11 mm</dd></div>
+        <div><dt>Số lượng thả</dt><dd>300.000 con · mật độ 150 con/m²</dd></div>
+        <div><dt>Xét nghiệm PCR</dt><dd><span class="ok">Âm tính</span> với WSSV (đốm trắng), AHPND (hoại tử gan tụy cấp), EHP (vi bào tử trùng), IHHNV</dd></div>
+        <div><dt>Kiểm dịch</dt><dd>Giấy chứng nhận kiểm dịch số <span class="mono">KD-0000/2026 (minh họa)</span> · ảnh chụp bản gốc đính kèm</dd></div>
+        <div><dt>Thả giống</dt><dd>06/07/2026, 17:20 · nhiệt độ nước 29,1 °C · độ mặn 15‰ · thuần độ mặn 2 giờ</dd></div>
+      </dl>
+    </div>
+    <div class="note"><svg><use href="#i-info"/></svg><p>Con giống sạch bệnh là câu hỏi đầu tiên của nhà máy thu mua. Phiếu xét nghiệm và giấy kiểm dịch được chụp và lưu ngay khi nhận giống, gắn với mã lô giống của trại.</p></div>
+  </section>
+
+  <!-- ============ NƯỚC AO ============ -->
+  <section id="nuoc-ao">
+    <div class="sec-top"><h2>Môi trường nước suốt vụ nuôi</h2><span class="src sensor"><i></i>Cảm biến tự động, ký số</span></div>
+    <div class="stats">
+      <div class="stat"><small>Số lần đo</small><strong>27.648</strong></div>
+      <div class="stat"><small>Trong ngưỡng an toàn</small><strong id="s-safe">99,3%</strong></div>
+      <div class="stat"><small>Sự cố đã xử lý</small><strong>3 / 3</strong></div>
+    </div>
+    <div class="card chart"><div class="chart-head"><b>Oxy hòa tan (DO)</b><span>mg/L · thấp nhất và trung bình mỗi ngày</span></div><div id="ch-do"></div>
+      <div class="legend"><span><i style="background:var(--src-sensor)"></i>Thấp nhất trong ngày</span><span><i style="background:var(--src-sensor);opacity:.45"></i>Trung bình</span><span><i style="background:var(--warn)"></i>Ngưỡng cảnh báo 4 mg/L</span><span><i style="background:var(--crit)"></i>Sự cố</span></div></div>
+    <div class="card chart"><div class="chart-head"><b>Nhiệt độ nước</b><span>°C · trung bình, khoảng thấp–cao mỗi ngày</span></div><div id="ch-temp"></div></div>
+    <div class="card chart"><div class="chart-head"><b>pH</b><span>trung bình mỗi ngày · vùng xanh là khoảng tốt 7,5–8,5</span></div><div id="ch-ph"></div></div>
+    <div class="card chart partner-only"><div class="chart-head"><b>Độ mặn</b><span>‰ · giảm theo các đợt mưa</span></div><div id="ch-sal"></div></div>
+    <div class="card">
+      <h3 style="margin-bottom:10px">Sự cố trong vụ và cách hệ thống xử lý</h3>
+      <div class="incidents" id="incidents"></div>
+    </div>
+    <div class="note"><svg><use href="#i-info"/></svg><p>Khối này <b>không ai nhập tay</b>: trạm cảm biến ở ao đo mỗi 5 phút, gửi qua LoRa về gateway, mỗi gói có chữ ký số của trạm. Người mua thấy được ao đã được chăm sóc ra sao, kể cả các sự cố và cách xử lý. Công khai cả sự cố làm hồ sơ <b>đáng tin hơn</b>, không kém đi.</p></div>
+  </section>
+
+  <!-- ============ NHẬT KÝ ============ -->
+  <section id="nhat-ky">
+    <div class="sec-top"><h2>Nhật ký vụ nuôi</h2><span class="src staff"><i></i>Nhân viên nhập + ảnh + GPS</span></div>
+    <div class="card chart"><div class="chart-head"><b>Thức ăn mỗi ngày</b><span>kg · theo loại thức ăn</span></div><div id="ch-feed"></div>
+      <div class="legend"><span><i style="background:var(--src-staff);opacity:.3"></i>Số 1–2 (tôm nhỏ)</span><span><i style="background:var(--src-staff);opacity:.55"></i>Số 3</span><span><i style="background:var(--src-staff)"></i>Số 4</span></div></div>
+    <div class="filters" role="group" aria-label="Lọc nhật ký" id="filters">
+      <button type="button" data-f="all" aria-pressed="true">Tất cả</button>
+      <button type="button" data-f="feed" aria-pressed="false">Cho ăn</button>
+      <button type="button" data-f="treat" aria-pressed="false">Vi sinh, khoáng, vôi</button>
+      <button type="button" data-f="water" aria-pressed="false">Xử lý nước</button>
+      <button type="button" data-f="health" aria-pressed="false">Kiểm tra sức khỏe</button>
+      <button type="button" data-f="alert" aria-pressed="false">Sự cố</button>
+    </div>
+    <div class="card"><div class="log" id="log"></div></div>
+    <button type="button" class="btn more" id="more">Xem thêm nhật ký</button>
+    <div class="note"><svg><use href="#i-info"/></svg><p>Nhân viên quét QR dán ở bờ ao, bấm chọn việc, chụp ảnh tại chỗ. Ảnh tự gắn giờ và GPS; bản ghi đã gửi <b>không sửa, không xóa được</b>, chỉ thêm bản ghi điều chỉnh có lý do. Người mua xem bản rút gọn; đối tác thu mua xem đầy đủ số lô thức ăn, liều lượng.</p></div>
+  </section>
+
+  <!-- ============ VẬT TƯ ============ -->
+  <section id="vat-tu">
+    <div class="sec-top"><h2>Thức ăn và vật tư đã dùng</h2><span class="src staff"><i></i>Kho vật tư, theo số lô</span></div>
+    <div class="card public-only">
+      <dl class="kv">
+        <div><dt>Thức ăn</dt><dd>Thức ăn công nghiệp cho tôm, 4 loại theo giai đoạn · tổng <span class="mono" id="v-feed">6.016 kg</span></dd></div>
+        <div><dt>Kháng sinh</dt><dd><span class="ok">Không sử dụng</span> trong suốt vụ nuôi</dd></div>
+        <div><dt>Hóa chất cấm</dt><dd><span class="ok">Không sử dụng</span> · hệ thống tự đối chiếu danh mục cấm khi nhập kho</dd></div>
+        <div><dt>Chế phẩm sinh học</dt><dd>Vi sinh xử lý đáy, vi sinh đường ruột, khoáng, vôi, mật rỉ đường</dd></div>
+      </dl>
+    </div>
+    <div class="card tbl partner-only" style="display:none">
+      <table>
+        <thead><tr><th>Vật tư</th><th>Nhà cung cấp</th><th>Số lô</th><th class="n">Đã dùng</th></tr></thead>
+        <tbody>
+          <tr><td>Thức ăn tôm số 1 (dạng mảnh)</td><td>NCC thức ăn A (minh họa)</td><td class="mono">TA1-2606-112</td><td class="n" id="t-f1">–</td></tr>
+          <tr><td>Thức ăn tôm số 2</td><td>NCC thức ăn A (minh họa)</td><td class="mono">TA2-2607-087</td><td class="n" id="t-f2">–</td></tr>
+          <tr><td>Thức ăn tôm số 3</td><td>NCC thức ăn A (minh họa)</td><td class="mono">TA3-2608-041</td><td class="n" id="t-f3">–</td></tr>
+          <tr><td>Thức ăn tôm số 4</td><td>NCC thức ăn A (minh họa)</td><td class="mono">TA4-2609-015</td><td class="n" id="t-f4">–</td></tr>
+          <tr><td>Vi sinh xử lý đáy (Bacillus)</td><td>NCC chế phẩm B (minh họa)</td><td class="mono">VS-2606-330</td><td class="n" id="t-vs">–</td></tr>
+          <tr><td>Vi sinh đường ruột (trộn thức ăn)</td><td>NCC chế phẩm B (minh họa)</td><td class="mono">VR-2607-019</td><td class="n" id="t-vr">–</td></tr>
+          <tr><td>Khoáng tạt ao</td><td>NCC chế phẩm C (minh họa)</td><td class="mono">KH-2607-204</td><td class="n" id="t-kh">–</td></tr>
+          <tr><td>Vôi CaCO₃</td><td>NCC vật tư D (minh họa)</td><td class="mono">VO-2606-051</td><td class="n" id="t-vo">–</td></tr>
+          <tr><td>Vitamin C (trộn thức ăn)</td><td>NCC chế phẩm C (minh họa)</td><td class="mono">VC-2607-077</td><td class="n" id="t-vc">–</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card partner-only" style="display:none">
+      <h3 style="margin-bottom:8px">Đối chiếu kho và nhật ký</h3>
+      <div class="checks">
+        <div class="check"><span class="tick">✓</span><span>Thức ăn xuất kho cho ao A3 so với tổng nhật ký cho ăn</span><span class="v" id="c-feed">–</span></div>
+        <div class="check"><span class="tick">✓</span><span>Hóa đơn mua thức ăn khớp số lô trong kho</span><span class="v">4/4 lô</span></div>
+        <div class="check"><span class="tick">✓</span><span>Mọi chế phẩm thuộc danh mục được phép</span><span class="v">9/9</span></div>
+      </div>
+    </div>
+    <div class="lock public-only"><svg><use href="#i-lock"/></svg><span>Số lô từng bao thức ăn, nhà cung cấp, liều lượng chỉ hiển thị cho <b>đối tác thu mua</b>. Bấm "Đối tác thu mua" ở đầu trang để xem.</span></div>
+    <div class="note"><svg><use href="#i-info"/></svg><p>Ba mức hiển thị bảo vệ bí mật kinh doanh: <b>người mua</b> thấy cam kết; <b>đối tác</b> thấy số lô, nhà cung cấp, đối chiếu kho; <b>nội bộ và cơ quan kiểm tra</b> thấy toàn bộ, kể cả giá và FCR chi tiết.</p></div>
+  </section>
+
+  <!-- ============ CAMERA ============ -->
+  <section id="camera">
+    <div class="sec-top"><h2>Hình ảnh tự động từ camera</h2><span class="src cam"><i></i>Camera RTSP + AI nhận diện</span></div>
+    <div class="cams" id="cams"></div>
+    <div class="note"><svg><use href="#i-info"/></svg><p>Camera ở bờ ao không quay liên tục cho người xem. AI <b>chỉ chụp lại khi phát hiện sự kiện</b>: có người cho ăn, có người rải vật tư, quạt dừng, kéo lưới thu hoạch. Ảnh được gắn vào đúng dòng nhật ký, nên nhật ký "cho ăn 06:30" có ảnh camera lúc 06:31 làm bằng chứng.</p></div>
+  </section>
+
+  <!-- ============ TĂNG TRƯỞNG (đối tác) ============ -->
+  <section id="tang-truong" class="partner-only" style="display:none">
+    <div class="sec-top"><h2>Tăng trưởng và hiệu quả</h2><span class="src staff"><i></i>Chài kiểm tra mỗi 10 ngày</span></div>
+    <div class="card chart"><div class="chart-head"><b>Trọng lượng trung bình</b><span>gram/con</span></div><div id="ch-grow"></div></div>
+    <div class="stats">
+      <div class="stat"><small>FCR (hệ số thức ăn)</small><strong id="p-fcr">1,25</strong></div>
+      <div class="stat"><small>Tăng trọng/ngày</small><strong>0,20 g</strong></div>
+      <div class="stat"><small>Năng suất</small><strong>24 tấn/ha</strong></div>
+    </div>
+  </section>
+
+  <!-- ============ THU HOẠCH ============ -->
+  <section id="thu-hoach">
+    <div class="sec-top"><h2>Thu hoạch</h2><span class="src staff"><i></i>Phiếu cân + ảnh + thiết bị ghi nhiệt</span></div>
+    <div class="card">
+      <dl class="kv">
+        <div><dt>Thời gian</dt><dd>09/10/2026, 04:30 – 07:10</dd></div>
+        <div><dt>Hình thức</dt><dd>Thu toàn bộ, kéo lưới và tháo cạn</dd></div>
+        <div><dt>Sản lượng</dt><dd>4.812 kg · 38 lần cân · phiếu cân số <span class="mono">PC-1009-A3</span></dd></div>
+        <div><dt>Size</dt><dd>52 con/kg (khoảng 19,2 g/con)</dd></div>
+        <div><dt>Bảo quản</dt><dd>Ướp đá ngay tại bờ, nhiệt độ thân tôm ≤ 4 °C sau 25 phút</dd></div>
+        <div><dt>Giao cho</dt><dd>Cơ sở sơ chế (minh họa) · nhận lô lúc 09:40</dd></div>
+        <div><dt>Thời gian ngưng thuốc</dt><dd><span class="ok">Đạt</span> · không dùng thuốc thú y trong 30 ngày cuối</dd></div>
+      </dl>
+    </div>
+    <div class="card chart"><div class="chart-head"><b>Phân bố kích cỡ khi thu hoạch</b><span>% khối lượng · mẫu 200 con</span></div><div id="ch-size"></div></div>
+    <div class="card chart partner-only" style="display:none"><div class="chart-head"><b>Nhiệt độ thùng xe lạnh</b><span>°C · ghi mỗi 5 phút</span></div><div id="ch-cold"></div></div>
+  </section>
+
+  <!-- ============ KIỂM NGHIỆM ============ -->
+  <section id="kiem-nghiem">
+    <div class="sec-top"><h2>Kết quả kiểm nghiệm</h2><span class="src third"><i></i>Phòng thử nghiệm độc lập</span></div>
+    <div class="card tbl">
+      <p class="muted" style="font-size:.8rem;margin-bottom:6px">Phòng thử nghiệm (minh họa) · lấy mẫu 08/10/2026 · phiếu kết quả số <span class="mono">KQ-0000 (minh họa)</span></p>
+      <table>
+        <thead><tr><th>Chỉ tiêu</th><th class="n">Giới hạn phát hiện</th><th>Kết quả</th></tr></thead>
+        <tbody>
+          <tr><td>Chloramphenicol</td><td class="n">0,1 µg/kg</td><td class="ok">Không phát hiện</td></tr>
+          <tr><td>Nitrofuran (AOZ, AMOZ, AHD, SEM)</td><td class="n">0,5 µg/kg</td><td class="ok">Không phát hiện</td></tr>
+          <tr><td>Enrofloxacin + Ciprofloxacin</td><td class="n">1 µg/kg</td><td class="ok">Không phát hiện</td></tr>
+          <tr><td>Malachite green + Leucomalachite green</td><td class="n">0,5 µg/kg</td><td class="ok">Không phát hiện</td></tr>
+          <tr><td>Trifluralin</td><td class="n">1 µg/kg</td><td class="ok">Không phát hiện</td></tr>
+          <tr><td>Kim loại nặng (Pb, Cd, Hg)</td><td class="n">theo QCVN</td><td class="ok">Đạt</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><svg><use href="#i-info"/></svg><p>Đây là lớp niềm tin quan trọng nhất: <b>bên thứ ba độc lập</b> xác nhận. Nhật ký nói "không dùng kháng sinh", phiếu kiểm nghiệm chứng minh điều đó. Ảnh phiếu gốc được đính kèm và niêm phong cùng hồ sơ.</p></div>
+  </section>
+
+  <!-- ============ XÁC THỰC ============ -->
+  <section id="xac-thuc">
+    <div class="sec-top"><h2>Vì sao bạn có thể tin hồ sơ này</h2><span class="src third"><i></i>Kiểm tra được ngay trên điện thoại</span></div>
+    <div class="card">
+      <h3 style="margin-bottom:8px">Nguồn gốc của dữ liệu trong hồ sơ</h3>
+      <div class="bar" aria-hidden="true"><i style="width:91%;background:var(--src-sensor)"></i><i style="width:5%;background:var(--src-staff)"></i><i style="width:3%;background:var(--src-cam)"></i><i style="width:1%;background:var(--src-3rd)"></i></div>
+      <div class="legend"><span><i style="background:var(--src-sensor)"></i>Cảm biến tự động 91%</span><span><i style="background:var(--src-staff)"></i>Nhân viên nhập kèm ảnh 5%</span><span><i style="background:var(--src-cam)"></i>Camera AI 3%</span><span><i style="background:var(--src-3rd)"></i>Bên thứ ba 1%</span></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:8px">Đối chiếu chéo tự động</h3>
+      <div class="checks">
+        <div class="check"><span class="tick">✓</span><span>Nhật ký cho ăn có ảnh camera cùng thời điểm</span><span class="v" id="x-cam">–</span></div>
+        <div class="check"><span class="tick">✓</span><span>Sau mỗi cữ ăn, cảm biến ghi nhận oxy giảm nhẹ như dự kiến</span><span class="v">96%</span></div>
+        <div class="check"><span class="tick">✓</span><span>Sản lượng thu khớp với con giống × tỷ lệ sống × size</span><span class="v">lệch 0,8%</span></div>
+        <div class="check"><span class="tick">✓</span><span>Ảnh nhật ký được chụp trong bán kính 50 m quanh ao</span><span class="v">100%</span></div>
+        <div class="check"><span class="tick">✓</span><span>Gói dữ liệu cảm biến có chữ ký số hợp lệ</span><span class="v">100%</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:4px">Niêm phong hằng ngày</h3>
+      <p class="muted" style="font-size:.82rem;margin-bottom:10px">Cuối mỗi ngày, toàn bộ dữ liệu của ngày đó được tính một "dấu vân tay số" SHA-256 và nối với dấu của ngày trước. Sửa một con số bất kỳ ở quá khứ thì mọi dấu phía sau đều sai. Nút dưới đây tính lại toàn bộ 96 ngày <b>ngay trên điện thoại của bạn</b>.</p>
+      <div class="vrow">
+        <button type="button" class="btn primary" id="verify">Kiểm tra niêm phong</button>
+        <button type="button" class="btn" id="tamper">Thử sửa 1 con số</button>
+      </div>
+      <div class="verify-out" id="vout" role="status" aria-live="polite"></div>
+      <div class="chain" id="chain" style="margin-top:10px"></div>
+    </div>
+    <div class="note"><svg><use href="#i-info"/></svg><p>Bấm "Thử sửa 1 con số" để thấy: hệ thống đổi lượng thức ăn của một ngày trong quá khứ, rồi kiểm tra lại. Chuỗi niêm phong gãy ngay tại ngày đó. <b>Không ai sửa ngược được hồ sơ mà không bị lộ, kể cả chủ trại và đơn vị làm phần mềm.</b> Dấu niêm phong cuối cùng có thể neo lên blockchain công khai hoặc Cổng truy xuất quốc gia.</p></div>
+  </section>
+
+  <!-- ============ TEM ============ -->
+  <section id="tem">
+    <div class="sec-top"><h2>Tem trên bao bì và giấy chứng nhận lô hàng</h2><span class="src staff"><i></i>In tự động khi tạo lô</span></div>
+    <div class="label">
+      <div>
+        <div class="brandline" style="margin-bottom:6px"><div class="logo" style="width:28px;height:28px"><svg><use href="#i-shrimp"/></svg></div><b style="color:var(--ink)">Vùng Nuôi Mẫu</b></div>
+        <h3>Tôm thẻ chân trắng tươi</h3>
+        <div class="lk"><span>Mã lô: VN-A3-2602-1009</span><span>Thu hoạch: 09/10/2026</span><span>Size: 52 con/kg</span><span>Bảo quản: 0–4 °C</span></div>
+        <p style="font-size:.78rem;margin-top:8px;font-weight:700">Quét để xem hành trình từ ao đến bàn ăn</p>
+      </div>
+      <div class="qrbox" id="qr" aria-label="Mã QR dẫn tới trang này"><svg role="img" aria-label="Mã QR mở trang truy xuất lô VN-A3-2602-1009" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37 37" shape-rendering="crispEdges" class="segno"><path fill="#fff" d="M0 0h37v37h-37z"/><path class="qrline" stroke="#102a2d" d="M2 2.5h7m1 0h1m3 0h1m1 0h1m1 0h1m1 0h1m4 0h1m2 0h7m-33 1h1m5 0h1m2 0h1m1 0h2m3 0h1m2 0h2m3 0h1m1 0h1m5 0h1m-33 1h1m1 0h3m1 0h1m2 0h1m1 0h1m1 0h1m1 0h1m1 0h2m1 0h2m1 0h2m1 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h1m1 0h2m2 0h1m1 0h3m1 0h1m-33 1h1m1 0h3m1 0h1m1 0h2m2 0h3m2 0h2m3 0h2m2 0h1m1 0h3m1 0h1m-33 1h1m5 0h1m1 0h1m1 0h1m3 0h1m3 0h2m2 0h1m3 0h1m5 0h1m-33 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-25 1h1m6 0h7m-22 1h1m3 0h1m1 0h4m7 0h1m1 0h1m1 0h1m1 0h7m2 0h1m-32 1h3m3 0h1m4 0h3m1 0h3m2 0h1m1 0h1m1 0h1m3 0h2m-31 1h4m2 0h1m1 0h3m4 0h2m1 0h1m2 0h4m1 0h1m2 0h1m1 0h1m-32 1h2m7 0h1m4 0h2m1 0h3m1 0h1m1 0h2m6 0h2m-31 1h2m2 0h1m1 0h1m1 0h1m2 0h2m2 0h1m1 0h4m1 0h1m1 0h1m1 0h2m2 0h1m-33 1h1m2 0h3m1 0h1m1 0h4m5 0h1m2 0h1m4 0h2m2 0h1m-27 1h4m1 0h1m2 0h2m1 0h1m2 0h1m4 0h7m1 0h1m-32 1h1m1 0h1m5 0h10m1 0h4m2 0h3m-28 1h3m2 0h5m2 0h1m3 0h2m3 0h2m3 0h1m1 0h4m-31 1h1m1 0h1m3 0h3m1 0h3m2 0h3m2 0h1m1 0h1m1 0h1m3 0h4m-32 1h3m1 0h3m2 0h1m1 0h1m2 0h1m1 0h1m2 0h1m2 0h2m1 0h2m1 0h1m1 0h1m-32 1h1m1 0h1m2 0h1m5 0h3m3 0h2m2 0h1m1 0h1m1 0h1m1 0h1m-26 1h3m1 0h3m1 0h1m3 0h2m1 0h4m1 0h1m1 0h1m1 0h2m1 0h1m1 0h1m-32 1h1m1 0h2m5 0h1m2 0h1m1 0h3m1 0h1m6 0h1m1 0h1m1 0h3m-30 1h1m1 0h4m2 0h1m1 0h2m1 0h1m1 0h1m2 0h4m4 0h2m1 0h1m-28 1h2m7 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h3m3 0h2m-33 1h2m1 0h5m1 0h1m1 0h1m5 0h1m1 0h13m-24 1h2m2 0h2m1 0h1m1 0h2m5 0h1m3 0h1m1 0h3m-33 1h7m1 0h2m1 0h1m1 0h1m1 0h4m1 0h1m1 0h1m1 0h1m1 0h1m1 0h2m1 0h1m-32 1h1m5 0h1m2 0h1m1 0h1m3 0h1m1 0h5m2 0h1m3 0h1m3 0h1m-33 1h1m1 0h3m1 0h1m1 0h2m1 0h1m4 0h2m2 0h3m1 0h6m1 0h2m-33 1h1m1 0h3m1 0h1m2 0h4m1 0h3m1 0h1m1 0h2m2 0h1m1 0h3m-29 1h1m1 0h3m1 0h1m2 0h3m3 0h1m4 0h3m1 0h1m1 0h5m-31 1h1m5 0h1m2 0h3m2 0h2m1 0h5m2 0h1m1 0h1m2 0h1m-30 1h7m1 0h4m1 0h1m1 0h3m1 0h3m2 0h1m1 0h1m2 0h1m2 0h1"/></svg></div>
+    </div>
+    <div class="cert">
+      <h3>GIẤY TỰ CÔNG BỐ THÔNG TIN LÔ HÀNG</h3>
+      <p class="sub">Kèm theo mỗi chuyến giao hàng · bản mẫu</p>
+      <dl class="kv">
+        <div><dt>Sản phẩm</dt><dd>Tôm thẻ chân trắng tươi nguyên con</dd></div>
+        <div><dt>Mã lô</dt><dd class="mono">VN-A3-2602-1009</dd></div>
+        <div><dt>Cơ sở nuôi</dt><dd>Vùng Nuôi Mẫu · Khu A, ao A3 · mã cơ sở nuôi (minh họa)</dd></div>
+        <div><dt>Khối lượng</dt><dd>4.812 kg · size 52 con/kg</dd></div>
+        <div><dt>Cam kết</dt><dd>Không sử dụng kháng sinh, hóa chất cấm; đủ thời gian ngưng thuốc; kết quả kiểm nghiệm đính kèm</dd></div>
+        <div><dt>Tra cứu</dt><dd>Quét mã QR trên tem hoặc nhập mã lô tại trang truy xuất</dd></div>
+        <div><dt>Dấu niêm phong</dt><dd class="mono" id="cert-hash">–</dd></div>
+      </dl>
+      <div class="sign"><div>Đại diện cơ sở nuôi<b>(ký, đóng dấu)</b></div><div>Bên nhận hàng<b>(ký xác nhận)</b></div></div>
+    </div>
+  </section>
+
+  <footer>
+    <span><b>Trang mẫu</b> do <b>Lý Minh Châu</b> xây dựng cùng trợ lý AI, để minh họa giải pháp truy xuất nguồn gốc cho vùng nuôi tôm, cá.</span>
+    <span>Mọi tên cơ sở, số giấy tờ, số lô, kết quả kiểm nghiệm trên trang đều là dữ liệu minh họa. Khi triển khai thật, dữ liệu lấy từ cảm biến, nhật ký, kho và phiếu kết quả của chính vùng nuôi.</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  /* ---------- tiện ích ---------- */
+  var NS = 'http://www.w3.org/2000/svg';
+  function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  var R = rng(20261009);
+  var N = 96;
+  var START = Date.UTC(2026, 6, 6);
+  function dateOf(d) { return new Date(START + d * 864e5); }
+  function dmy(d) { var x = dateOf(d); return ('0' + x.getUTCDate()).slice(-2) + '/' + ('0' + (x.getUTCMonth() + 1)).slice(-2); }
+  function dmyy(d) { return dmy(d) + '/2026'; }
+  function fmt(v, dp) { return v.toLocaleString('vi-VN', { minimumFractionDigits: dp || 0, maximumFractionDigits: dp || 0 }); }
+  function el(tag, attrs, parent, text) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; }
+  function noise(a) { return (R() - 0.5) * 2 * a; }
+
+  /* ---------- dữ liệu cảm biến ---------- */
+  var INC = { 23: 'storm', 49: 'power', 78: 'algae' };
+  var rainDays = [12, 13, 23, 24, 41, 52, 53, 66, 71, 72, 84];
+  var sensor = [];
+  var sal = 15;
+  for (var d = 0; d < N; d++) {
+    if (rainDays.indexOf(d) >= 0) sal -= 0.35 + R() * 0.2;
+    else if (d % 10 === 5) sal += 0.25;
+    var tAvg = 29.6 + 1.1 * Math.sin(d / 8.5) + noise(0.3);
+    var doMin = 5.6 - d * 0.0105 + noise(0.25);
+    if (INC[d] === 'storm') doMin = 3.7;
+    if (INC[d] === 'power') doMin = 3.4;
+    if (INC[d] === 'algae') doMin = 3.9;
+    var doAvg = doMin + 1.5 + noise(0.2);
+    var ph = 7.95 + 0.18 * Math.sin(d / 6) + noise(0.06);
+    if (rainDays.indexOf(d) >= 0) ph -= 0.15;
+    sensor.push({ d: d, tAvg: +tAvg.toFixed(1), tMin: +(tAvg - 0.9 - R() * 0.4).toFixed(1), tMax: +(tAvg + 1.0 + R() * 0.5).toFixed(1), doMin: +doMin.toFixed(2), doAvg: +doAvg.toFixed(2), ph: +ph.toFixed(2), sal: +sal.toFixed(1) });
+  }
+
+  /* ---------- tăng trưởng, thức ăn ---------- */
+  var wPts = [[0, 0.01], [10, 0.25], [20, 0.9], [30, 2.1], [40, 4.2], [50, 7.0], [60, 10.4], [70, 13.6], [80, 16.3], [90, 18.4], [96, 19.2]];
+  function weight(d) { for (var i = 1; i < wPts.length; i++) if (d <= wPts[i][0]) { var a = wPts[i - 1], b = wPts[i]; return a[1] + (b[1] - a[1]) * (d - a[0]) / (b[0] - a[0]); } return 19.2; }
+  var feedRaw = [];
+  for (d = 0; d < N; d++) {
+    var count = 300000 * (1 - 0.166 * d / N);
+    var bio = count * weight(d) / 1000;
+    var rate = d < 20 ? 0 : (0.09 - (d - 20) * 0.00085);
+    var f = d < 20 ? (2 + d * 0.9) : bio * Math.max(rate, 0.024);
+    if (INC[d]) f *= 0.6;
+    if (rainDays.indexOf(d) >= 0) f *= 0.85;
+    feedRaw.push(f * (1 + noise(0.04)));
+  }
+  var rawSum = feedRaw.reduce(function (a, b) { return a + b; }, 0);
+  var FEED_TOTAL = 6016;
+  var feed = feedRaw.map(function (v) { return Math.max(1, Math.round(v * FEED_TOTAL / rawSum)); });
+  var feedSum = feed.reduce(function (a, b) { return a + b; }, 0);
+  feed[N - 2] += FEED_TOTAL - feedSum; // khớp tổng
+  feed[N - 1] = 0; // ngày thu hoạch không cho ăn
+  feed[N - 2] += 0;
+  function feedType(d) { return d < 15 ? 1 : d < 35 ? 2 : d < 60 ? 3 : 4; }
+  var byType = [0, 0, 0, 0, 0];
+  feed.forEach(function (v, i) { byType[feedType(i)] += v; });
+
+  /* ---------- nhật ký ---------- */
+  var events = [];
+  var ROLES = ['Kỹ thuật khu A', 'Công nhân ao A3', 'Quản lý khu A'];
+  function gps() { return '9.' + (61200 + Math.floor(R() * 60)) + ', 105.' + (97100 + Math.floor(R() * 60)); }
+  function add(d, time, type, title, detail, extra) { events.push(Object.assign({ d: d, time: time, type: type, title: title, detail: detail, by: ROLES[type === 'health' ? 0 : type === 'alert' ? 2 : 1], gps: gps() }, extra || {})); }
+  var lots = { 1: 'TA1-2606-112', 2: 'TA2-2607-087', 3: 'TA3-2608-041', 4: 'TA4-2609-015' };
+  var used = { vs: 0, vr: 0, kh: 0, vo: 0, vc: 0 };
+  add(0, '17:20', 'health', 'Thả giống', '300.000 con PL12, lô PL-2607-0418 · thuần độ mặn 2 giờ · ảnh túi giống và giấy kiểm dịch', { photo: 1 });
+  for (d = 0; d < N - 1; d++) {
+    if (feed[d] > 0) add(d, d < 20 ? '06:30' : '06:30–18:00', 'feed', 'Cho ăn ' + (d < 20 ? '3' : '4') + ' cữ · ' + fmt(feed[d]) + ' kg', 'Thức ăn số ' + feedType(d) + (d % 5 === 0 ? ' · trộn vitamin C' : '') + (d >= 15 && d % 2 === 0 ? ' · trộn vi sinh đường ruột' : ''), { lot: lots[feedType(d)], qty: feed[d], cam: true });
+    if (d % 5 === 0) used.vc += 0.4 + d * 0.01;
+    if (d >= 15 && d % 2 === 0) used.vr += 0.2 + d * 0.004;
+    if (d % 3 === 1) { var v = 1 + Math.round(d / 30); used.vs += v; add(d, '09:00', 'treat', 'Tạt vi sinh xử lý đáy', fmt(v) + ' kg, ủ với mật rỉ đường 6 giờ trước khi tạt', { lot: 'VS-2606-330', photo: 1 }); }
+    if (d % 7 === 3) { var k = 20 + Math.round(d / 3); used.kh += k; add(d, '20:00', 'treat', 'Tạt khoáng', fmt(k) + ' kg khoáng tổng hợp · độ kiềm đo được ' + (118 + Math.round(R() * 30)) + ' mg/L', { lot: 'KH-2607-204', photo: 1 }); }
+    if (rainDays.indexOf(d) >= 0) { var l = 40 + Math.round(R() * 30); used.vo += l; add(d, '16:30', 'water', 'Bón vôi sau mưa', fmt(l) + ' kg CaCO₃ quanh bờ · pH lúc 16:00 ' + fmt(sensor[d].ph, 2), { lot: 'VO-2606-051', photo: 1 }); }
+    if (d % 10 === 8 && d > 15) add(d, '07:30', 'water', 'Thay nước 10%', 'Cấp nước từ ao lắng đã xử lý · ' + (d > 50 ? '~260' : '~200') + ' m³ · độ mặn nước cấp ' + fmt(sensor[d].sal - 0.4, 1) + '‰', { photo: 1 });
+    if (d % 7 === 6 && d > 5) add(d, '08:00', 'health', 'Kiểm tra sức khỏe tôm', 'Gan tụy bình thường, đường ruột đầy, vỏ cứng · ' + (d % 14 === 13 ? 'xi-phông đáy, bùn ít mùi' : 'chài 30 con kiểm tra'), { photo: 1 });
+    if (d % 10 === 0 && d > 0) add(d, '08:30', 'health', 'Chài đo tăng trưởng', 'Trọng lượng trung bình ' + fmt(weight(d), 1) + ' g/con', { photo: 1 });
+  }
+  add(30, '10:00', 'health', 'Xét nghiệm PCR định kỳ', 'Gửi mẫu 60 con: âm tính EHP, WSSV, AHPND (phiếu kết quả đính kèm)', { photo: 1 });
+  add(62, '10:00', 'health', 'Xét nghiệm PCR định kỳ', 'Gửi mẫu 60 con: âm tính EHP, WSSV, AHPND (phiếu kết quả đính kèm)', { photo: 1 });
+  add(23, '03:12', 'alert', 'Cảnh báo: oxy thấp do giông', 'DO 3,7 mg/L · trạm tự bật 2 quạt dự phòng lúc 03:12 · kỹ thuật xác nhận 03:16 · DO về 4,6 sau 40 phút', { auto: 1 });
+  add(49, '02:14', 'alert', 'Sự cố: mất điện lưới 38 phút', 'Trạm báo động, tự gọi điện người trực 02:15 · máy phát chạy lúc 02:21 · DO thấp nhất 3,4 · không hao hụt', { auto: 1 });
+  add(78, '04:40', 'alert', 'Cảnh báo: oxy giảm nhanh, nghi tảo tàn', 'DO giảm 1,3 mg/L trong 30 phút · bật thêm quạt · sáng thay 15% nước, giảm 20% cữ ăn', { auto: 1 });
+  add(95, '04:30', 'health', 'Thu hoạch', 'Kéo lưới và tháo cạn · 38 lần cân · tổng 4.812 kg · ướp đá tại bờ', { photo: 1, cam: true });
+  events.sort(function (a, b) { return b.d - a.d || (b.time > a.time ? 1 : -1); });
+
+  /* ---------- thống kê hiển thị ---------- */
+  var setText = function (id, t) { var e = document.getElementById(id); if (e) e.textContent = t; };
+  setText('t-f1', fmt(byType[1]) + ' kg'); setText('t-f2', fmt(byType[2]) + ' kg'); setText('t-f3', fmt(byType[3]) + ' kg'); setText('t-f4', fmt(byType[4]) + ' kg');
+  setText('t-vs', fmt(used.vs) + ' kg'); setText('t-vr', fmt(used.vr, 1) + ' kg'); setText('t-kh', fmt(used.kh) + ' kg'); setText('t-vo', fmt(used.vo) + ' kg'); setText('t-vc', fmt(used.vc, 1) + ' kg');
+  var feedLog = feed.reduce(function (a, b) { return a + b; }, 0);
+  setText('v-feed', fmt(feedLog) + ' kg');
+  setText('c-feed', fmt(feedLog) + ' / ' + fmt(feedLog + 14) + ' kg');
+  setText('p-fcr', fmt(feedLog / 4812, 2));
+  var feedEvents = events.filter(function (e) { return e.type === 'feed'; }).length;
+  setText('x-cam', fmt(feedEvents - 2) + '/' + fmt(feedEvents));
+
+  /* ---------- biểu đồ ---------- */
+  var W = 680, H = 200, PL = 34, PR = 10, PT = 10, PB = 24;
+  function axes(svg, lo, hi, step, fmtY) {
+    for (var v = lo; v <= hi + 1e-9; v += step) { var y = sy(v, lo, hi); el('line', { x1: PL, x2: W - PR, y1: y, y2: y, class: 'c-grid' }, svg); el('text', { x: PL - 6, y: y + 3.5, 'text-anchor': 'end' }, svg, fmtY ? fmtY(v) : fmt(v, step < 1 ? 1 : 0)); }
+    [0, 15, 30, 45, 60, 75, 90].forEach(function (d) { el('text', { x: sx(d), y: H - 6, 'text-anchor': 'middle' }, svg, dmy(d)); });
+  }
+  function sx(d) { return PL + d / (N - 1) * (W - PL - PR); }
+  function sy(v, lo, hi) { return PT + (1 - (v - lo) / (hi - lo)) * (H - PT - PB); }
+  function mk(id, label) { var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': label }); document.getElementById(id).appendChild(svg); return svg; }
+  function path(pts) { return pts.map(function (p, i) { return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(''); }
+
+  (function () { // DO
+    var lo = 2, hi = 9, s = mk('ch-do', 'Oxy hòa tan thấp nhất mỗi ngày phần lớn trên 4 mg/L, ba sự cố ngắn đã được xử lý');
+    axes(s, lo, hi, 1);
+    el('line', { x1: PL, x2: W - PR, y1: sy(4, lo, hi), y2: sy(4, lo, hi), class: 'c-thr' }, s);
+    el('path', { d: path(sensor.map(function (r) { return [sx(r.d), sy(r.doAvg, lo, hi)]; })), class: 'c-line2' }, s);
+    el('path', { d: path(sensor.map(function (r) { return [sx(r.d), sy(r.doMin, lo, hi)]; })), class: 'c-line' }, s);
+    Object.keys(INC).forEach(function (k) { var r = sensor[k]; el('circle', { cx: sx(r.d), cy: sy(r.doMin, lo, hi), r: 4.5, class: 'c-ev' }, s); });
+  })();
+  (function () { // nhiệt độ
+    var lo = 26, hi = 33, s = mk('ch-temp', 'Nhiệt độ nước dao động 28 đến 31 độ C');
+    axes(s, lo, hi, 1);
+    var top = sensor.map(function (r) { return [sx(r.d), sy(r.tMax, lo, hi)]; }), bot = sensor.map(function (r) { return [sx(r.d), sy(r.tMin, lo, hi)]; }).reverse();
+    el('path', { d: path(top.concat(bot)) + 'Z', class: 'c-area' }, s);
+    el('path', { d: path(sensor.map(function (r) { return [sx(r.d), sy(r.tAvg, lo, hi)]; })), class: 'c-line' }, s);
+  })();
+  (function () { // pH
+    var lo = 7, hi = 9, s = mk('ch-ph', 'pH trung bình nằm trong khoảng 7,5 đến 8,5');
+    el('rect', { x: PL, y: sy(8.5, lo, hi), width: W - PL - PR, height: sy(7.5, lo, hi) - sy(8.5, lo, hi), class: 'c-band' }, s);
+    axes(s, lo, hi, 0.5, function (v) { return fmt(v, 1); });
+    el('path', { d: path(sensor.map(function (r) { return [sx(r.d), sy(r.ph, lo, hi)]; })), class: 'c-line' }, s);
+  })();
+  (function () { // độ mặn
+    var lo = 8, hi = 17, s = mk('ch-sal', 'Độ mặn giảm từ 15 xuống khoảng 11 phần nghìn theo các đợt mưa');
+    axes(s, lo, hi, 3);
+    el('path', { d: path(sensor.map(function (r) { return [sx(r.d), sy(r.sal, lo, hi)]; })), class: 'c-line' }, s);
+  })();
+  (function () { // thức ăn
+    var hi = Math.ceil(Math.max.apply(null, feed) / 20) * 20, lo = 0, s = mk('ch-feed', 'Lượng thức ăn mỗi ngày tăng dần theo kích cỡ tôm, tổng ' + fmt(feedLog) + ' kg');
+    axes(s, lo, hi, hi / 4);
+    var bw = (W - PL - PR) / N - 1.2;
+    feed.forEach(function (v, d) { if (!v) return; var t = feedType(d); var y = sy(v, lo, hi); el('rect', { x: sx(d) - bw / 2, y: y, width: bw, height: sy(0, lo, hi) - y, class: t <= 2 ? 'c-bar3' : t === 3 ? 'c-bar2' : 'c-bar' }, s); });
+  })();
+  (function () { // tăng trưởng
+    var lo = 0, hi = 20, s = mk('ch-grow', 'Trọng lượng tôm tăng từ dưới 1 gram lên 19,2 gram sau 96 ngày');
+    axes(s, lo, hi, 5);
+    el('path', { d: path(wPts.map(function (p) { return [sx(Math.min(p[0], N - 1)), sy(p[1], lo, hi)]; })), class: 'c-gline' }, s);
+    wPts.forEach(function (p) { if (p[0] === 0) return; el('circle', { cx: sx(Math.min(p[0], N - 1)), cy: sy(p[1], lo, hi), r: 3.5, class: 'c-dot' }, s); });
+  })();
+  (function () { // size
+    var bins = [['40–45', 8], ['45–50', 21], ['50–55', 38], ['55–60', 23], ['60–65', 10]];
+    var s = el('svg', { viewBox: '0 0 680 170', role: 'img', 'aria-label': 'Phần lớn tôm ở cỡ 50 đến 55 con mỗi kg' }); document.getElementById('ch-size').appendChild(s);
+    var bwid = 96, gap = (680 - 40 - bwid * 5) / 4;
+    bins.forEach(function (b, i) { var x = 20 + i * (bwid + gap), h = b[1] * 3; el('rect', { x: x, y: 130 - h, width: bwid, height: h, rx: 4, class: i === 2 ? 'c-bar' : 'c-bar2' }, s); el('text', { x: x + bwid / 2, y: 124 - h, 'text-anchor': 'middle', style: 'fill:var(--ink);font-size:11px;font-weight:600' }, s, b[1] + '%'); el('text', { x: x + bwid / 2, y: 148, 'text-anchor': 'middle' }, s, b[0] + ' con/kg'); });
+  })();
+  (function () { // chuỗi lạnh
+    var pts = []; for (var i = 0; i <= 27; i++) pts.push([i * 5, 3.2 - Math.min(i, 6) * 0.3 + Math.sin(i / 2) * 0.25 + (i === 14 ? 0.6 : 0)]);
+    var s = el('svg', { viewBox: '0 0 680 160', role: 'img', 'aria-label': 'Nhiệt độ thùng xe lạnh giữ trong khoảng 1 đến 4 độ C suốt 2 giờ 15 phút' }); document.getElementById('ch-cold').appendChild(s);
+    function x(m) { return 34 + m / 135 * 636; } function y(v) { return 10 + (1 - v / 6) * 126; }
+    el('rect', { x: 34, y: y(4), width: 636, height: y(0) - y(4), class: 'c-band' }, s);
+    [0, 2, 4, 6].forEach(function (v) { el('text', { x: 28, y: y(v) + 3.5, 'text-anchor': 'end' }, s, v + '°'); });
+    [0, 30, 60, 90, 120].forEach(function (m) { el('text', { x: x(m), y: 154, 'text-anchor': 'middle' }, s, m + ' phút'); });
+    el('path', { d: path(pts.map(function (p) { return [x(p[0]), y(p[1])]; })), class: 'c-line' }, s);
+  })();
+
+  /* ---------- sự cố ---------- */
+  var safePct = 99.3;
+  setText('f-safe', fmt(safePct, 1) + '%'); setText('s-safe', fmt(safePct, 1) + '%');
+  var incHtml = events.filter(function (e) { return e.type === 'alert'; }).map(function (e) { return '<div class="inc"><div><b>' + dmyy(e.d) + ' · ' + e.time + ' · ' + e.title + '</b><span>' + e.detail + '</span></div></div>'; }).join('');
+  document.getElementById('incidents').innerHTML = incHtml;
+
+  /* ---------- nhật ký ---------- */
+  var ICON = { feed: 'i-feed', treat: 'i-flask', water: 'i-drop', health: 'i-steth', alert: 'i-bolt' };
+  var filter = 'all', shown = 25, partner = false;
+  function renderLog() {
+    var list = events.filter(function (e) { return filter === 'all' || e.type === filter; });
+    var out = [], lastD = -1;
+    list.slice(0, shown).forEach(function (e) {
+      if (e.d !== lastD) { out.push('<div class="day">NGÀY ' + (e.d + 1) + ' · ' + dmyy(e.d) + '</div>'); lastD = e.d; }
+      var meta = [];
+      if (e.auto) meta.push('<span class="src sensor"><i></i>Hệ thống tự ghi</span>');
+      else meta.push('<span>' + e.by + '</span>');
+      if (e.photo || e.cam) meta.push('<span class="pill">ảnh · GPS ' + (partner ? e.gps : '✓') + '</span>');
+      if (e.cam) meta.push('<span class="src cam"><i></i>camera ' + e.time.slice(0, 5).replace(/(\d+):(\d+)/, function (m, h, mi) { return h + ':' + ('0' + (+mi + 1)).slice(-2); }) + '</span>');
+      if (e.lot && partner) meta.push('<span class="pill">lô ' + e.lot + '</span>');
+      out.push('<div class="ev"><div class="ev-ic ' + e.type + '"><svg><use href="#' + ICON[e.type] + '"/></svg></div><div class="ev-main"><div class="ev-top"><b>' + e.title + '</b><time>' + e.time + '</time></div><p>' + e.detail + '</p><div class="ev-meta">' + meta.join('') + '</div></div></div>');
+    });
+    document.getElementById('log').innerHTML = out.join('');
+    var more = document.getElementById('more');
+    more.hidden = list.length <= shown;
+    more.textContent = 'Xem thêm nhật ký (' + fmt(list.length - shown) + ' mục)';
+  }
+  document.getElementById('filters').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button'); if (!b) return;
+    filter = b.getAttribute('data-f'); shown = 25;
+    Array.prototype.forEach.call(this.querySelectorAll('button'), function (x) { x.setAttribute('aria-pressed', x === b); });
+    renderLog();
+  });
+  document.getElementById('more').addEventListener('click', function () { shown += 40; renderLog(); });
+  renderLog();
+
+  /* ---------- camera ---------- */
+  var frames = [
+    { d: 61, t: '06:31:08', title: 'Phát hiện cho ăn', tag: 'người · rải thức ăn', conf: '0,94', kind: 'feed' },
+    { d: 64, t: '09:02:41', title: 'Phát hiện tạt vi sinh', tag: 'người · xô vật tư', conf: '0,91', kind: 'treat' },
+    { d: 49, t: '02:16:12', title: 'Quạt dừng do mất điện', tag: 'quạt · không quay', conf: '0,97', kind: 'fan' },
+    { d: 95, t: '05:12:30', title: 'Thu hoạch: kéo lưới', tag: 'người · lưới kéo', conf: '0,93', kind: 'harvest' }
+  ];
+  var camHtml = frames.map(function (f, i) {
+    var night = f.kind === 'fan' || f.kind === 'harvest';
+    var water = night ? '#1E3B3F' : '#5E8F86', bank = night ? '#2C2A22' : '#8C8466', sky = night ? '#0F1C1E' : '#9EB7AE';
+    var s = '<svg viewBox="0 0 320 200" role="img" aria-label="Ảnh camera minh họa: ' + f.title + '">';
+    s += '<rect width="320" height="200" fill="' + sky + '"/><path d="M0 70 L320 58 L320 200 L0 200 Z" fill="' + bank + '"/><path d="M40 92 L320 76 L320 200 L10 200 Z" fill="' + water + '"/>';
+    for (var r = 0; r < 7; r++) s += '<ellipse cx="' + (70 + r * 36 + (i * 13 % 20)) + '" cy="' + (120 + (r % 3) * 22) + '" rx="' + (14 + r % 4 * 4) + '" ry="3" fill="none" stroke="rgba(255,255,255,.22)"/>';
+    s += '<g transform="translate(205 96)"><rect x="-26" y="-6" width="52" height="8" rx="2" fill="#7E8D8A"/><circle cx="-18" cy="8" r="9" fill="none" stroke="#C9D3D0" stroke-width="2"/><circle cx="18" cy="8" r="9" fill="none" stroke="#C9D3D0" stroke-width="2"/></g>';
+    if (f.kind === 'feed' || f.kind === 'treat') {
+      s += '<g transform="translate(78 64)"><circle cx="0" cy="0" r="7" fill="#E6D3B3"/><path d="M-9 8 h18 l3 30 h-24 z" fill="' + (f.kind === 'feed' ? '#2F64B5' : '#4C7A3F') + '"/><path d="M-9 40 l-3 22 M9 40 l3 22" stroke="#33302A" stroke-width="5"/><path d="M9 14 l22 -6" stroke="#E6D3B3" stroke-width="4"/></g>';
+      if (f.kind === 'feed') for (var p = 0; p < 18; p++) s += '<circle cx="' + (112 + p * 3.4) + '" cy="' + (64 + Math.sin(p) * 6 + p * 1.5) + '" r="1.6" fill="#C79A5A"/>';
+      else s += '<rect x="96" y="58" width="16" height="18" rx="2" fill="#D9D2C2"/>';
+      s += '<rect x="58" y="48" width="70" height="88" fill="none" stroke="#FFD24A" stroke-width="2"/><text x="60" y="44" fill="#FFD24A" font-size="10" font-family="Roboto Mono, monospace">' + f.tag + ' ' + f.conf + '</text>';
+    }
+    if (f.kind === 'fan') s += '<rect x="170" y="80" width="72" height="40" fill="none" stroke="#FF6B5E" stroke-width="2"/><text x="170" y="76" fill="#FF6B5E" font-size="10" font-family="Roboto Mono, monospace">' + f.tag + ' ' + f.conf + '</text>';
+    if (f.kind === 'harvest') { s += '<path d="M60 150 Q 160 110 270 150" fill="none" stroke="#C9D3D0" stroke-width="2" stroke-dasharray="3 3"/>'; for (var q = 0; q < 3; q++) s += '<g transform="translate(' + (64 + q * 100) + ' ' + (126 - (q === 1 ? 14 : 0)) + ')"><circle r="6" fill="#E6D3B3"/><path d="M-8 7 h16 l2 22 h-20z" fill="#5A6F80"/></g>'; s += '<rect x="48" y="100" width="236" height="62" fill="none" stroke="#FFD24A" stroke-width="2"/><text x="50" y="96" fill="#FFD24A" font-size="10" font-family="Roboto Mono, monospace">' + f.tag + ' ' + f.conf + '</text>'; }
+    s += '<rect x="0" y="0" width="320" height="18" fill="rgba(0,0,0,.45)"/><text x="6" y="13" fill="#fff" font-size="10" font-family="Roboto Mono, monospace">CAM-A3-01  2026-' + dmy(f.d).split('/').reverse().join('-') + ' ' + f.t + '</text>';
+    s += '<circle cx="308" cy="9" r="4" fill="#FF4D4D"/></svg>';
+    return '<figure class="cam" style="margin:0">' + s + '<figcaption><b>' + f.title + '</b>Ảnh minh họa · ' + dmyy(f.d) + ' ' + f.t.slice(0, 5) + ' · gắn vào nhật ký ngày ' + (f.d + 1) + '</figcaption></figure>';
+  }).join('');
+  document.getElementById('cams').innerHTML = camHtml;
+
+  /* ---------- niêm phong SHA-256 ---------- */
+  var subtle = window.crypto && window.crypto.subtle;
+  var enc = new TextEncoder();
+  /* SHA-256 dự phòng khi trình duyệt không có crypto.subtle */
+  function sha256js(bytes) {
+    var K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+    var H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    var l = bytes.length, nb = ((l + 9 + 63) >> 6) << 6, m = new Uint8Array(nb);
+    m.set(bytes); m[l] = 0x80;
+    var bits = l * 8; m[nb - 4] = bits >>> 24; m[nb - 3] = (bits >>> 16) & 255; m[nb - 2] = (bits >>> 8) & 255; m[nb - 1] = bits & 255;
+    var w = new Uint32Array(64);
+    for (var o = 0; o < nb; o += 64) {
+      for (var i = 0; i < 16; i++) w[i] = (m[o + i * 4] << 24) | (m[o + i * 4 + 1] << 16) | (m[o + i * 4 + 2] << 8) | m[o + i * 4 + 3];
+      for (i = 16; i < 64; i++) { var a0 = w[i - 15], a1 = w[i - 2]; var s0 = ((a0 >>> 7) | (a0 << 25)) ^ ((a0 >>> 18) | (a0 << 14)) ^ (a0 >>> 3); var s1 = ((a1 >>> 17) | (a1 << 15)) ^ ((a1 >>> 19) | (a1 << 13)) ^ (a1 >>> 10); w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0; }
+      var A = H[0], B = H[1], C = H[2], D = H[3], E = H[4], F = H[5], G = H[6], Hh = H[7];
+      for (i = 0; i < 64; i++) {
+        var S1 = ((E >>> 6) | (E << 26)) ^ ((E >>> 11) | (E << 21)) ^ ((E >>> 25) | (E << 7));
+        var t1 = (Hh + S1 + ((E & F) ^ (~E & G)) + K[i] + w[i]) | 0;
+        var S0 = ((A >>> 2) | (A << 30)) ^ ((A >>> 13) | (A << 19)) ^ ((A >>> 22) | (A << 10));
+        var t2 = (S0 + ((A & B) ^ (A & C) ^ (B & C))) | 0;
+        Hh = G; G = F; F = E; E = (D + t1) | 0; D = C; C = B; B = A; A = (t1 + t2) | 0;
+      }
+      H[0] = (H[0] + A) | 0; H[1] = (H[1] + B) | 0; H[2] = (H[2] + C) | 0; H[3] = (H[3] + D) | 0; H[4] = (H[4] + E) | 0; H[5] = (H[5] + F) | 0; H[6] = (H[6] + G) | 0; H[7] = (H[7] + Hh) | 0;
+    }
+    var out = new Uint8Array(32); for (i = 0; i < 8; i++) { out[i * 4] = H[i] >>> 24; out[i * 4 + 1] = (H[i] >>> 16) & 255; out[i * 4 + 2] = (H[i] >>> 8) & 255; out[i * 4 + 3] = H[i] & 255; }
+    return out.buffer;
+  }
+  function digest(bytes) {
+    if (subtle && subtle.digest) return subtle.digest('SHA-256', bytes).catch(function () { return sha256js(bytes); });
+    return Promise.resolve(sha256js(bytes));
+  }
+  subtle = subtle || { ok: true };
+  var tampered = false;
+  function dayPayload(d, tamper) {
+    var dayEvents = events.filter(function (e) { return e.d === d; }).map(function (e) { var q = e.qty; if (tamper && e.type === 'feed') q = Math.round(q * 0.7); return [e.time, e.type, e.title.replace(/[\d.,]+ kg/, (q || '') + ' kg'), e.lot || '', q || 0]; });
+    return JSON.stringify({ day: dmyy(d), sensor: sensor[d], log: dayEvents });
+  }
+  function hex(buf) { return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ('0' + b.toString(16)).slice(-2); }).join(''); }
+  function chainHashes(tamperDay) {
+    var prev = '0'.repeat(64), out = [];
+    return (function step(d) {
+      if (d >= N) return Promise.resolve(out);
+      return digest(enc.encode(prev + dayPayload(d, d === tamperDay))).then(function (h) { prev = hex(h); out.push(prev); return step(d + 1); });
+    })(0);
+  }
+  var sealed = null;
+  var TAMPER_DAY = 40;
+  function renderChain(hashes, badFrom) {
+    var show = [0, 1, TAMPER_DAY - 1, TAMPER_DAY, TAMPER_DAY + 1, N - 2, N - 1];
+    document.getElementById('chain').innerHTML = show.map(function (d, i) {
+      var bad = badFrom != null && d >= badFrom;
+      var gap = (i > 0 && d - show[i - 1] > 1) ? '<div class="muted" style="font-size:.72rem;text-align:center">· · · ' + (d - show[i - 1] - 1) + ' ngày · · ·</div>' : '';
+      return gap + '<div class="blk ' + (badFrom == null ? 'okb' : bad ? 'bad' : 'okb') + '"><span class="mono">Ngày ' + (d + 1) + '<br><span class="muted">' + dmy(d) + '</span></span><span class="h">' + hashes[d] + '</span><span class="st">' + (bad ? '✕' : '✓') + '</span></div>';
+    }).join('');
+  }
+  var vout = document.getElementById('vout');
+  if (!subtle) {
+    setText('seal-sum', '96 ngày · trình duyệt này không hỗ trợ kiểm tra');
+    vout.className = 'verify-out show badv';
+    vout.textContent = 'Trình duyệt này không hỗ trợ hàm băm SHA-256. Hãy mở trang bằng Chrome hoặc Safari bản mới.';
+  } else {
+    chainHashes(-1).then(function (h) {
+      sealed = h;
+      var last = h[N - 1];
+      setText('seal-sum', '96 ngày · dấu niêm phong ' + last.slice(0, 8) + '…' + last.slice(-6));
+      setText('cert-hash', last.slice(0, 16) + '…' + last.slice(-8));
+      renderChain(h, null);
+    });
+  }
+  function verify() {
+    if (!sealed) return;
+    vout.className = 'verify-out show'; vout.textContent = 'Đang tính lại 96 dấu niêm phong...';
+    var t0 = performance.now();
+    chainHashes(tampered ? TAMPER_DAY : -1).then(function (h) {
+      var ms = Math.round(performance.now() - t0), badAt = -1;
+      for (var i = 0; i < N; i++) if (h[i] !== sealed[i]) { badAt = i; break; }
+      if (badAt < 0) {
+        vout.className = 'verify-out show okv';
+        vout.innerHTML = '<b>Khớp hoàn toàn.</b> Đã tính lại 96/96 ngày trong ' + ms + ' ms. Dấu cuối <span class="mono">' + h[N - 1].slice(0, 12) + '…</span> trùng với dấu đã công bố. Dữ liệu chưa bị chỉnh sửa.';
+        renderChain(h, null);
+      } else {
+        vout.className = 'verify-out show badv';
+        vout.innerHTML = '<b>Phát hiện chỉnh sửa tại ngày ' + (badAt + 1) + ' (' + dmyy(badAt) + ').</b> Lượng thức ăn ngày đó đã bị đổi, nên dấu niêm phong của ngày ' + (badAt + 1) + ' và toàn bộ ' + (N - badAt - 1) + ' ngày sau đều không khớp với dấu đã công bố.';
+        renderChain(h, badAt);
+      }
+    });
+  }
+  document.getElementById('verify').addEventListener('click', verify);
+  document.getElementById('tamper').addEventListener('click', function () {
+    tampered = !tampered;
+    this.textContent = tampered ? 'Khôi phục dữ liệu gốc' : 'Thử sửa 1 con số';
+    verify();
+  });
+
+  /* ---------- chế độ xem ---------- */
+  var vp = document.getElementById('v-public'), vq = document.getElementById('v-partner');
+  function setPartner(on) {
+    partner = on;
+    document.body.classList.toggle('partner', on);
+    vp.setAttribute('aria-pressed', !on); vq.setAttribute('aria-pressed', on);
+    Array.prototype.forEach.call(document.querySelectorAll('.partner-only'), function (x) { x.style.display = ''; });
+    renderLog();
+  }
+  vp.addEventListener('click', function () { setPartner(false); });
+  vq.addEventListener('click', function () { setPartner(true); });
+  var no = document.getElementById('n-on'), nf = document.getElementById('n-off');
+  function setNotes(on) { document.body.classList.toggle('hide-notes', !on); no.setAttribute('aria-pressed', on); nf.setAttribute('aria-pressed', !on); }
+  no.addEventListener('click', function () { setNotes(true); });
+  nf.addEventListener('click', function () { setNotes(false); });
+  if (location.hash === '#nguoi-mua') setNotes(false);
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function () {
+  try {
+    if (!window.QRCode || location.protocol.indexOf('http') !== 0) return;
+    var box = document.getElementById('qr');
+    var url = location.origin + location.pathname + '#nguoi-mua';
+    box.innerHTML = '';
+    new QRCode(box, { text: url, width: 360, height: 360, colorDark: '#102A2D', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    Array.prototype.forEach.call(box.querySelectorAll('img,canvas'), function (x) { x.style.width = '100%'; x.style.height = 'auto'; });
+    box.setAttribute('aria-label', 'Mã QR mở trang ' + url);
+  } catch (e) { /* giữ mã QR có sẵn */ }
+})();
+</script>
+</body>
+</html>
